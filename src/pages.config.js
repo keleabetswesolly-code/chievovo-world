@@ -52,6 +52,10 @@ import Music from './pages/Music';
 import Live from './pages/Live';
 import Shop from './pages/Shop';
 import Profile from './pages/Profile';
+import ProductDetail from './pages/ProductDetail';
+import ArtistDetail from './pages/ArtistDetail';
+import TrackPlayer from './pages/TrackPlayer';
+import RoomDetail from './pages/RoomDetail';
 import __Layout from './Layout.jsx';
 
 
@@ -61,6 +65,10 @@ export const PAGES = {
     "Live": Live,
     "Shop": Shop,
     "Profile": Profile,
+    "ProductDetail": ProductDetail,
+    "ArtistDetail": ArtistDetail,
+    "TrackPlayer": TrackPlayer,
+    "RoomDetail": RoomDetail,
 }
 
 export const pagesConfig = {
