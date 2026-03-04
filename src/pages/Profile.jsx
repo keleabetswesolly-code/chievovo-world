@@ -4,6 +4,8 @@ import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import {
   Settings,
   Heart,
@@ -12,13 +14,15 @@ import {
   Headphones,
   ChevronRight,
   LogOut,
-  User,
   Bell,
   Shield,
   HelpCircle,
   Palette,
   Volume2,
-  Edit3
+  Edit3,
+  Cpu,
+  Users2,
+  Newspaper
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
