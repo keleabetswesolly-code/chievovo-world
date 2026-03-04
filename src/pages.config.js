@@ -56,6 +56,10 @@ import ProductDetail from './pages/ProductDetail';
 import ArtistDetail from './pages/ArtistDetail';
 import TrackPlayer from './pages/TrackPlayer';
 import RoomDetail from './pages/RoomDetail';
+import Collab from './pages/Collab';
+import Community from './pages/Community';
+import Tech from './pages/Tech';
+import Discover from './pages/Discover';
 import __Layout from './Layout.jsx';
 
 
@@ -69,6 +73,10 @@ export const PAGES = {
     "ArtistDetail": ArtistDetail,
     "TrackPlayer": TrackPlayer,
     "RoomDetail": RoomDetail,
+    "Collab": Collab,
+    "Community": Community,
+    "Tech": Tech,
+    "Discover": Discover,
 }
 
 export const pagesConfig = {
