@@ -64,6 +64,12 @@ export default function Profile() {
     base44.auth.logout();
   };
 
+  const quickLinks = [
+    { label: "Collab Studio", icon: Cpu, page: "Collab", color: "#00D4FF" },
+    { label: "Community", icon: Users2, page: "Community", color: "#FF6B35" },
+    { label: "Tech Updates", icon: Newspaper, page: "Tech", color: "#00D4FF" },
+  ];
+
   const stats = [
     { label: "Following", value: "234" },
     { label: "Followers", value: "1.2K" },
