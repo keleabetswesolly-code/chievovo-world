@@ -137,6 +137,24 @@ export default function Profile() {
       </header>
 
       <div className="px-5 py-6">
+        {/* Quick Nav */}
+        <div className="grid grid-cols-3 gap-3 mb-8">
+          {quickLinks.map((link, i) => (
+            <motion.button
+              key={link.label}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              onClick={() => navigate(createPageUrl(link.page))}
+              className="flex flex-col items-center py-4 rounded-2xl border border-white/5 hover:border-opacity-40 transition-all"
+              style={{ background: `${link.color}0D`, borderColor: `${link.color}20` }}
+            >
+              <link.icon className="w-6 h-6 mb-2" style={{ color: link.color }} />
+              <span className="text-xs font-semibold" style={{ color: link.color }}>{link.label}</span>
+            </motion.button>
+          ))}
+        </div>
+
         {/* Library Section */}
         <h3 className="text-lg font-bold mb-4">Your Library</h3>
         <div className="grid grid-cols-2 gap-3 mb-8">
