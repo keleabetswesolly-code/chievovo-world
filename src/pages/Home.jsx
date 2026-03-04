@@ -9,7 +9,7 @@ import TrackRow from "@/components/ui/TrackRow";
 import LiveRoomCard from "@/components/ui/LiveRoomCard";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import DJMixCard from "@/components/home/DJMixCard";
+import DJMixCard from "@/components/home/DJMixCard.jsx";
 import EcosystemPill from "@/components/home/EcosystemPill";
 import TechPostCard from "@/components/home/TechPostCard";
 import CollabCard from "@/components/home/CollabCard";
