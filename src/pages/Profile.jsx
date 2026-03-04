@@ -44,7 +44,7 @@ const SETTINGS_ITEMS = [
 ];
 
 export default function Profile() {
-  const navigate = useNavigate ? useNavigate() : null;
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
