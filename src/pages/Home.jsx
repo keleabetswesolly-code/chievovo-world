@@ -10,6 +10,7 @@ import EcosystemPill from "@/components/home/EcosystemPill";
 import HeroBanner from "@/components/home/HeroBanner";
 import StatsBar from "@/components/home/StatsBar";
 import FeedCard from "@/components/home/FeedCard";
+import YouTubeSearch from "@/components/home/YouTubeSearch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const PILLS = [
@@ -217,6 +218,9 @@ export default function Home() {
             </div>
           </section>
         )}
+
+        {/* YouTube Search */}
+        <YouTubeSearch />
 
         {/* Dynamic Discovery Feed */}
         <section>

@@ -1,0 +1,63 @@
+{
+  "name": "DJMix",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "dj_name": {
+      "type": "string"
+    },
+    "dj_image": {
+      "type": "string"
+    },
+    "cover_url": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "string"
+    },
+    "genre": {
+      "type": "string"
+    },
+    "tracklist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "time": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "artist": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "plays": {
+      "type": "number",
+      "default": 0
+    },
+    "likes": {
+      "type": "number",
+      "default": 0
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "audio_url": {
+      "type": "string"
+    },
+    "episode": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "dj_name"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "name": "Playlist",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "cover_url": {
+      "type": "string"
+    },
+    "track_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "curator": {
+      "type": "string"
+    },
+    "followers": {
+      "type": "number",
+      "default": 0
+    },
+    "is_official": {
+      "type": "boolean",
+      "default": false
+    },
+    "genre": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

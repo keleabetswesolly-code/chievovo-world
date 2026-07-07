@@ -1,0 +1,67 @@
+{
+  "name": "LiveRoom",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "host_name": {
+      "type": "string"
+    },
+    "host_image": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "DJ Set",
+        "Production Workshop",
+        "Music Talk",
+        "Collaboration",
+        "Listening Party",
+        "Q&A"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "live",
+        "scheduled",
+        "ended"
+      ],
+      "default": "scheduled"
+    },
+    "listeners": {
+      "type": "number",
+      "default": 0
+    },
+    "speakers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "scheduled_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cover_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "host_name"
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "name": "Artist",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Artist/DJ name"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "genre": {
+      "type": "string",
+      "enum": [
+        "Afrobeats",
+        "Amapiano",
+        "Afro House",
+        "Afro Tech",
+        "Gqom",
+        "Highlife",
+        "Afro Soul",
+        "Hip Hop"
+      ]
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "cover_url": {
+      "type": "string"
+    },
+    "followers": {
+      "type": "number",
+      "default": 0
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "social_links": {
+      "type": "object",
+      "properties": {
+        "instagram": {
+          "type": "string"
+        },
+        "twitter": {
+          "type": "string"
+        },
+        "spotify": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

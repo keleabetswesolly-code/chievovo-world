@@ -1,0 +1,84 @@
+{
+  "name": "CollabProject",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "owner_name": {
+      "type": "string"
+    },
+    "owner_image": {
+      "type": "string"
+    },
+    "genre": {
+      "type": "string"
+    },
+    "bpm": {
+      "type": "number"
+    },
+    "key": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "in_progress",
+        "completed"
+      ],
+      "default": "open"
+    },
+    "daw": {
+      "type": "string",
+      "enum": [
+        "FL Studio",
+        "Ableton",
+        "Logic Pro",
+        "Pro Tools",
+        "GarageBand"
+      ],
+      "default": "FL Studio"
+    },
+    "collaborators": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "roles_needed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cover_url": {
+      "type": "string"
+    },
+    "preview_url": {
+      "type": "string"
+    },
+    "likes": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "title",
+    "owner_name"
+  ]
+}

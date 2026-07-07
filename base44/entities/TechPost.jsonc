@@ -1,0 +1,56 @@
+{
+  "name": "TechPost",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "cover_url": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Product Update",
+        "Music Tech",
+        "AI & Music",
+        "Industry News",
+        "Tutorials",
+        "Gear Review"
+      ]
+    },
+    "author": {
+      "type": "string"
+    },
+    "author_image": {
+      "type": "string"
+    },
+    "read_time": {
+      "type": "string"
+    },
+    "likes": {
+      "type": "number",
+      "default": 0
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "title",
+    "summary"
+  ]
+}

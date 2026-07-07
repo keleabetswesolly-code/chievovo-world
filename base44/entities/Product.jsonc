@@ -1,0 +1,66 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "price": {
+      "type": "number"
+    },
+    "original_price": {
+      "type": "number",
+      "description": "Price before discount"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Earbuds",
+        "Accessories",
+        "Apparel",
+        "Limited Edition",
+        "Bundles"
+      ]
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "in_stock": {
+      "type": "boolean",
+      "default": true
+    },
+    "stock_count": {
+      "type": "number"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "colors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "specs": {
+      "type": "object"
+    },
+    "rating": {
+      "type": "number"
+    },
+    "reviews_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "price"
+  ]
+}
