@@ -8,17 +8,23 @@ export default function YouTubeSearch() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeVideo, setActiveVideo] = useState(null);
+  const [error, setError] = useState(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!query.trim()) return;
     setLoading(true);
+    setError(null);
     setResults([]);
+    setHasSearched(true);
     try {
       const res = await base44.functions.invoke('youtubeSearch', { query: query.trim() });
-      setResults(res.data?.results || []);
-    } catch {
-      setResults([]);
+      const data = res.data?.results || res.results || [];
+      setResults(data);
+    } catch (err) {
+      console.error('YouTube search error:', err);
+      setError(err?.response?.data?.error || err?.message || 'Search failed. Make sure you are logged in.');
     } finally {
       setLoading(false);
     }
@@ -31,20 +37,31 @@ export default function YouTubeSearch() {
   return (
     <section>
       {/* Search Bar */}
-      <form onSubmit={handleSearch} className="relative mb-4">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search songs, artists, mixes..."
-          className="w-full pl-12 pr-12 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#00D4FF]/50 transition-colors text-sm"
-        />
-        {query && (
-          <button type="button" onClick={() => { setQuery(""); setResults([]); }} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
-            <X className="w-5 h-5" />
-          </button>
-        )}
+      <form onSubmit={handleSearch} className="relative mb-4 flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search songs, artists, mixes..."
+            className="w-full pl-12 pr-10 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#00D4FF]/50 transition-colors text-sm"
+          />
+          {query && (
+            <button type="button" onClick={() => { setQuery(""); setResults([]); setHasSearched(false); setError(null); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        <button
+          type="submit"
+          disabled={loading || !query.trim()}
+          className="px-5 py-3.5 rounded-2xl font-bold text-sm text-black disabled:opacity-40 transition-opacity flex items-center gap-1.5 flex-shrink-0"
+          style={{ background: "linear-gradient(135deg, #00D4FF, #FF6B35)" }}
+        >
+          <Search className="w-4 h-4" strokeWidth={2.5} />
+          Search
+        </button>
       </form>
 
       {/* Loading */}
@@ -82,8 +99,21 @@ export default function YouTubeSearch() {
         </div>
       )}
 
+      {/* Error */}
+      {!loading && error && (
+        <div className="text-center py-8 px-4">
+          <p className="text-sm text-[#FF6B35] font-medium mb-1">Search failed</p>
+          <p className="text-xs text-gray-500">{error}</p>
+        </div>
+      )}
+
+      {/* No results */}
+      {!loading && !error && hasSearched && results.length === 0 && (
+        <p className="text-center text-sm text-gray-600 py-6">No results found — try a different search</p>
+      )}
+
       {/* Empty hint */}
-      {!loading && results.length === 0 && !query && (
+      {!loading && !hasSearched && (
         <p className="text-center text-sm text-gray-600 py-6">Search YouTube for any song or mix to stream instantly</p>
       )}
 
