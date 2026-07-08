@@ -4,17 +4,21 @@ import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Search, ArrowLeft, Music2, Radio, Users, Cpu, X, TrendingUp } from "lucide-react";
+import { Search, ArrowLeft, Music2, Radio, Users, Cpu, X, TrendingUp, Youtube, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import TrackRow from "@/components/ui/TrackRow";
 import LiveRoomCard from "@/components/ui/LiveRoomCard";
+import useYouTubeSearch from "@/hooks/useYouTubeSearch";
+import YouTubePlayer from "@/components/ui/YouTubePlayer";
+import YouTubeResultRow from "@/components/ui/YouTubeResultRow";
 
 const TRENDING_TAGS = ["#Amapiano", "#Afrobeats", "#FL Studio", "#Collab", "#DJSet", "#NewDrop", "#AfroHouse", "#Gqom", "#BeatMaking", "#Buddyz"];
 
 export default function Discover() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const yt = useYouTubeSearch();
 
   const { data: tracks = [] } = useQuery({ queryKey: ['all-tracks'], queryFn: () => base44.entities.Track.list('-plays', 30) });
   const { data: artists = [] } = useQuery({ queryKey: ['all-artists'], queryFn: () => base44.entities.Artist.list('-followers', 20) });
@@ -161,7 +165,35 @@ export default function Discover() {
                 </section>
               )}
 
-              {!hasResults && q && (
+              {/* YouTube results */}
+              {q && (
+                <section>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Youtube className="w-4 h-4 text-red-500" />
+                      <h2 className="text-sm font-bold uppercase tracking-widest text-gray-500">Stream on YouTube</h2>
+                    </div>
+                    {!yt.results.length && !yt.loading && (
+                      <button onClick={() => yt.search(query)} className="text-xs text-[#00D4FF] font-semibold">Search</button>
+                    )}
+                  </div>
+                  {yt.loading && (
+                    <div className="flex items-center gap-2 py-4">
+                      <Loader2 className="w-4 h-4 text-[#00D4FF] animate-spin" />
+                      <span className="text-sm text-gray-400">Searching YouTube…</span>
+                    </div>
+                  )}
+                  {yt.results.length > 0 && (
+                    <div className="space-y-2">
+                      {yt.results.map((item, i) => (
+                        <YouTubeResultRow key={item.videoId} item={item} index={i} onPlay={yt.play} />
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {!hasResults && !yt.results.length && q && (
                 <div className="text-center py-16">
                   <Search className="w-12 h-12 text-gray-700 mx-auto mb-4" />
                   <h3 className="text-lg font-bold mb-2">No results for "{query}"</h3>
@@ -172,6 +204,8 @@ export default function Discover() {
           </AnimatePresence>
         )}
       </div>
+
+      <YouTubePlayer activeVideo={yt.activeVideo} onClose={yt.close} />
     </div>
   );
 }

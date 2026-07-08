@@ -1,16 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Search, SlidersHorizontal, Play, Shuffle } from "lucide-react";
+import { Search, SlidersHorizontal, Play, Shuffle, Youtube, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FeaturedCard from "@/components/ui/FeaturedCard";
 import TrackRow from "@/components/ui/TrackRow";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import useYouTubeSearch from "@/hooks/useYouTubeSearch";
+import YouTubePlayer from "@/components/ui/YouTubePlayer";
+import YouTubeResultRow from "@/components/ui/YouTubeResultRow";
 
 const GENRES = ["All", "Afrobeats", "Amapiano", "Afro House", "Afro Tech", "Gqom", "Hip Hop"];
 
@@ -18,6 +20,7 @@ export default function Music() {
   const navigate = useNavigate();
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const yt = useYouTubeSearch();
 
   const { data: tracks = [], isLoading: tracksLoading } = useQuery({
     queryKey: ['tracks', selectedGenre],
@@ -172,13 +175,47 @@ export default function Music() {
             </div>
           )}
 
-          {filteredTracks.length === 0 && !tracksLoading && (
+          {filteredTracks.length === 0 && !tracksLoading && !searchQuery && (
             <div className="text-center py-12">
               <p className="text-gray-500">No tracks found</p>
             </div>
           )}
         </section>
+
+        {/* YouTube Search Fallback */}
+        {searchQuery && (
+          <section className="mt-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Youtube className="w-4 h-4 text-red-500" />
+              <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400">Stream from YouTube</h3>
+            </div>
+            {filteredTracks.length === 0 && !yt.results.length && !yt.loading && (
+              <button
+                onClick={() => yt.search(searchQuery)}
+                className="w-full py-3 rounded-2xl text-sm font-semibold text-[#00D4FF] border border-[#00D4FF]/20 hover:bg-[#00D4FF]/10 transition-all"
+                style={{ background: "rgba(0,212,255,0.04)" }}
+              >
+                Search YouTube for "{searchQuery}"
+              </button>
+            )}
+            {yt.loading && (
+              <div className="flex items-center justify-center py-8 gap-2">
+                <Loader2 className="w-5 h-5 text-[#00D4FF] animate-spin" />
+                <span className="text-sm text-gray-400">Searching YouTube…</span>
+              </div>
+            )}
+            {yt.results.length > 0 && (
+              <div className="space-y-2">
+                {yt.results.map((item, i) => (
+                  <YouTubeResultRow key={item.videoId} item={item} index={i} onPlay={yt.play} />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
       </div>
+
+      <YouTubePlayer activeVideo={yt.activeVideo} onClose={yt.close} />
     </div>
   );
 }

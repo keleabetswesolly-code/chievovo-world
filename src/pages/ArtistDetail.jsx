@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,12 +6,15 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   ArrowLeft, Share2, Play, Shuffle, Heart, MoreHorizontal,
-  CheckCircle2, Instagram, Twitter, Cpu, X, Send, CheckCircle
+  CheckCircle2, Instagram, Twitter, Cpu, X, Send, CheckCircle, Youtube, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import TrackRow from "@/components/ui/TrackRow";
+import useYouTubeSearch from "@/hooks/useYouTubeSearch";
+import YouTubePlayer from "@/components/ui/YouTubePlayer";
+import YouTubeResultRow from "@/components/ui/YouTubeResultRow";
 
 const PROJECT_TYPES = ["Single", "EP", "Album", "Feature", "Remix", "Live Performance", "Other"];
 
@@ -32,6 +35,14 @@ export default function ArtistDetail() {
       setTimeout(() => { setShowCollabModal(false); setSubmitted(false); setMessage(""); setProjectType("Feature"); }, 2000);
     }
   });
+
+  const yt = useYouTubeSearch();
+
+  // Auto-load YouTube results for this artist once we know their name
+  useEffect(() => {
+    if (artist?.name) yt.search(`${artist.name} music`);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [artist?.name]);
 
   const { data: artist, isLoading } = useQuery({
     queryKey: ['artist', artistId],
@@ -202,7 +213,30 @@ export default function ArtistDetail() {
             </div>
           )}
         </div>
+
+        {/* YouTube Section */}
+        <div className="mt-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Youtube className="w-4 h-4 text-red-500" />
+            <h2 className="text-lg font-bold">Stream on YouTube</h2>
+          </div>
+          {yt.loading && (
+            <div className="flex items-center gap-2 py-6 justify-center">
+              <Loader2 className="w-5 h-5 text-[#00D4FF] animate-spin" />
+              <span className="text-sm text-gray-400">Loading…</span>
+            </div>
+          )}
+          {yt.results.length > 0 && (
+            <div className="space-y-2">
+              {yt.results.map((item, i) => (
+                <YouTubeResultRow key={item.videoId} item={item} index={i} onPlay={yt.play} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
+      <YouTubePlayer activeVideo={yt.activeVideo} onClose={yt.close} />
 
       <AnimatePresence>
         {showCollabModal && (
