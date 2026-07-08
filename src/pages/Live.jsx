@@ -101,9 +101,17 @@ export default function Live() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative rounded-3xl overflow-hidden mb-6"
+            className="relative rounded-3xl overflow-hidden mb-6 cursor-pointer"
+            onClick={() => navigate(createPageUrl(`RoomDetail?id=${filteredLive[0].id}`))}
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-[#00D4FF]/30 to-[#FF6B35]/30" />
+            {filteredLive[0].cover_url || filteredLive[0].host_image ? (
+              <>
+                <img src={filteredLive[0].cover_url || filteredLive[0].host_image} alt={filteredLive[0].title} className="absolute inset-0 w-full h-full object-cover" />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)" }} />
+              </>
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-[#00D4FF]/30 to-[#FF6B35]/30" />
+            )}
             <div className="relative p-6">
               <div className="flex items-center gap-2 mb-4">
                 <span className="flex items-center gap-1.5 px-3 py-1 bg-red-500/20 rounded-full">

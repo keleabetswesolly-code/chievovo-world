@@ -227,7 +227,7 @@ export default function Home() {
           <SectionHeader title="For You" subtitle="Curated by CHIEVOVO" />
           <div className="space-y-4">
             {feedItems.length === 0 ? (
-              <div className="py-16 text-center text-gray-600">Loading your feed…</div>
+              <div className="py-16 text-center text-gray-600">Add some content to see your feed</div>
             ) : (
               feedItems.map((item, i) => (
                 <FeedCard

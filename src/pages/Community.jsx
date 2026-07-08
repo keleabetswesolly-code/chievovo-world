@@ -126,7 +126,7 @@ export default function Community() {
                   <button onClick={() => handleLike(post)}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm transition-all hover:bg-white/5 ${likedPosts.has(post.id) ? 'text-[#FF6B35]' : 'text-gray-500'}`}>
                     <Heart className={`w-4 h-4 ${likedPosts.has(post.id) ? 'fill-current' : ''}`} />
-                    <span className="text-xs">{formatNum((post.likes || 0) + (likedPosts.has(post.id) ? 0 : 0))}</span>
+                    <span className="text-xs">{formatNum((post.likes || 0) + (likedPosts.has(post.id) ? 1 : 0))}</span>
                   </button>
                   <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm text-gray-500 hover:bg-white/5 transition-all">
                     <MessageCircle className="w-4 h-4" />
