@@ -38,12 +38,6 @@ export default function ArtistDetail() {
 
   const yt = useYouTubeSearch();
 
-  // Auto-load YouTube results for this artist once we know their name
-  useEffect(() => {
-    if (artist?.name) yt.search(`${artist.name} music`);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [artist?.name]);
-
   const { data: artist, isLoading } = useQuery({
     queryKey: ['artist', artistId],
     queryFn: () => base44.entities.Artist.filter({ id: artistId }),
@@ -56,6 +50,12 @@ export default function ArtistDetail() {
     queryFn: () => base44.entities.Track.filter({ artist_id: artistId }, '-plays', 20),
     enabled: !!artistId,
   });
+
+  // Auto-load YouTube results once artist name is known
+  useEffect(() => {
+    if (artist?.name) yt.search(`${artist.name} music`);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [artist?.name]);
 
   if (isLoading) {
     return (
