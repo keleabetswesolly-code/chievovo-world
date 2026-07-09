@@ -1,27 +1,36 @@
 import React, { createContext, useContext, useState, useRef, useCallback } from "react";
+import { base44 } from "@/api/base44Client";
 
 const AudioContext = createContext(null);
 
+// Build a search query from track metadata
+function buildQuery(track) {
+  return `${track.artist_name} - ${track.title} official audio`;
+}
+
+// Resolve a videoId by calling the youtubeSearch backend function
+async function resolveVideoId(track) {
+  if (track.videoId) return track.videoId;
+  const response = await base44.functions.invoke("youtubeSearch", { query: buildQuery(track) });
+  const results = response?.data?.results ?? response?.data ?? [];
+  return results[0]?.videoId || null;
+}
+
 export function AudioProvider({ children }) {
-  const [currentTrack, setCurrentTrack] = useState(null); // { id, title, artist_name, cover_url, audio_url, videoId }
+  const [currentTrack, setCurrentTrack] = useState(null); // { id, title, artist_name, cover_url, videoId }
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isResolving, setIsResolving] = useState(false); // true while background YT search is in-flight
   const [queue, setQueue] = useState([]);
   const iframeRef = useRef(null);
 
-  // Extract YouTube video ID from URL or raw 11-char ID
-  const extractVideoId = (raw) => {
-    if (!raw) return null;
-    const match = raw.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);
-    if (match) return match[1];
-    if (/^[A-Za-z0-9_-]{11}$/.test(raw)) return raw;
-    return null;
-  };
-
-  const getVideoId = (track) => track?.videoId || extractVideoId(track?.audio_url) || null;
-
-  const playTrack = useCallback((track) => {
-    setCurrentTrack(track);
+  const playTrack = useCallback(async (track) => {
+    setIsResolving(true);
+    setCurrentTrack({ ...track, videoId: null }); // show player immediately with spinner
     setIsPlaying(true);
+
+    const videoId = await resolveVideoId(track).catch(() => null);
+    setCurrentTrack({ ...track, videoId });
+    setIsResolving(false);
   }, []);
 
   const togglePlay = useCallback(() => {
@@ -30,8 +39,8 @@ export function AudioProvider({ children }) {
       const iframe = iframeRef.current;
       if (iframe) {
         iframe.contentWindow?.postMessage(
-          JSON.stringify({ event: 'command', func: next ? 'playVideo' : 'pauseVideo', args: [] }),
-          '*'
+          JSON.stringify({ event: "command", func: next ? "playVideo" : "pauseVideo", args: [] }),
+          "*"
         );
       }
       return next;
@@ -55,10 +64,16 @@ export function AudioProvider({ children }) {
   const clearTrack = useCallback(() => {
     setCurrentTrack(null);
     setIsPlaying(false);
+    setIsResolving(false);
   }, []);
 
   return (
-    <AudioContext.Provider value={{ currentTrack, isPlaying, queue, setQueue, playTrack, togglePlay, nextTrack, prevTrack, clearTrack, iframeRef, getVideoId }}>
+    <AudioContext.Provider value={{
+      currentTrack, isPlaying, isResolving,
+      queue, setQueue,
+      playTrack, togglePlay, nextTrack, prevTrack, clearTrack,
+      iframeRef,
+    }}>
       {children}
     </AudioContext.Provider>
   );
