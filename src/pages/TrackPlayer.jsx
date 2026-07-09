@@ -58,6 +58,7 @@ export default function TrackPlayer() {
   const retryTimerRef = useRef(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [iframeReady, setIframeReady] = useState(false);
   const [progress, setProgress] = useState(0);
   const [liked, setLikedState] = useState(() => getLikedTracks()[trackId] || false);
   const [shuffleOn, setShuffleOn] = useState(false);
@@ -76,9 +77,10 @@ export default function TrackPlayer() {
   const videoId = videoIdParam || (track ? extractVideoId(track.audio_url) : null);
   const useYouTube = !!videoId;
 
-  // ── Sync liked state to localStorage when trackId changes ──────────────────
+  // ── Sync liked state + reset iframe on track change ────────────────────────
   useEffect(() => {
     if (trackId) setLikedState(getLikedTracks()[trackId] || false);
+    setIframeReady(false);
   }, [trackId]);
 
   // ── Auto-retry on network error (max 3 attempts, 5s apart) ─────────────────
@@ -210,19 +212,6 @@ export default function TrackPlayer() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A]/80 via-[#0A0A0A]/90 to-[#0A0A0A]" />
       </div>
 
-      {/* ── Hidden YouTube IFrame ──────────────────────────────────────────── */}
-      {useYouTube && (
-        <div className="absolute w-px h-px opacity-0 pointer-events-none overflow-hidden">
-          <iframe
-            ref={iframeRef}
-            src={`https://www.youtube.com/embed/${videoId}?autoplay=0&enablejsapi=1&controls=0&modestbranding=1&playsinline=1`}
-            allow="autoplay; encrypted-media"
-            title="audio-player"
-            onError={() => setPlaybackError('embed')}
-          />
-        </div>
-      )}
-
       {/* ── Hidden HTML5 Audio ─────────────────────────────────────────────── */}
       {!useYouTube && track.audio_url && (
         <audio ref={audioRef} src={track.audio_url} preload="metadata" />
@@ -247,15 +236,39 @@ export default function TrackPlayer() {
           </button>
         </header>
 
-        {/* Album Art */}
+        {/* Album Art + Embedded YouTube Player */}
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="flex-1 flex items-center justify-center mb-8"
         >
-          <div className={`relative w-72 h-72 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-700 ${isPlaying ? 'scale-105' : 'scale-100'}`}>
+          <div
+            className={`relative w-72 h-72 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-700 ${isPlaying ? 'scale-105' : 'scale-100'}`}
+            style={{ boxShadow: useYouTube && iframeReady ? '0 0 40px rgba(0,212,255,0.25)' : undefined }}
+          >
+            {/* Fallback cover art — always present underneath */}
             <img src={coverImg} alt={track.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+
+            {/* YouTube IFrame — overlays cover art when a videoId is active */}
+            {useYouTube && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: iframeReady ? 1 : 0 }}
+                transition={{ duration: 0.6 }}
+                className="absolute inset-0 w-full h-full z-10"
+              >
+                <iframe
+                  ref={iframeRef}
+                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`}
+                  allow="autoplay; encrypted-media"
+                  title="audio-player"
+                  className="w-full h-full border-0"
+                  onLoad={() => setIframeReady(true)}
+                  onError={() => setPlaybackError('embed')}
+                />
+              </motion.div>
+            )}
           </div>
         </motion.div>
 
