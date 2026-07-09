@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { useAudio } from "@/lib/AudioContext";
 
 // ─── Liked tracks persistence via localStorage ───────────────────────────────
 const LIKED_KEY = "chievovo_liked_tracks";
@@ -49,6 +50,8 @@ export default function TrackPlayer() {
   const urlParams = new URLSearchParams(window.location.search);
   const trackId = urlParams.get("id");
   const videoIdParam = urlParams.get("videoId"); // optional YouTube fallback
+
+  const { queue, setQueue } = useAudio();
 
   const iframeRef = useRef(null);
   const audioRef = useRef(null);
@@ -159,6 +162,23 @@ export default function TrackPlayer() {
 
   const totalSeconds = 225;
   const currentSeconds = Math.floor((progress / 100) * totalSeconds);
+
+  const queueIndex = queue.findIndex(t => t.id === trackId);
+
+  const skipTo = (nextTrack) => {
+    if (!nextTrack) return;
+    setProgress(0);
+    setIsPlaying(false);
+    navigate(createPageUrl(`TrackPlayer?id=${nextTrack.id}`));
+  };
+
+  const handleSkipBack = () => {
+    if (queueIndex > 0) skipTo(queue[queueIndex - 1]);
+  };
+
+  const handleSkipForward = () => {
+    if (queueIndex >= 0 && queueIndex < queue.length - 1) skipTo(queue[queueIndex + 1]);
+  };
 
   // ── Loading state ───────────────────────────────────────────────────────────
   if (isLoading) {
@@ -313,8 +333,8 @@ export default function TrackPlayer() {
           >
             <Shuffle className="w-5 h-5" />
           </button>
-          <button className="p-3 text-white">
-            <SkipBack className="w-7 h-7 fill-white" />
+          <button onClick={handleSkipBack} className={`p-3 transition-colors ${queueIndex > 0 ? 'text-white' : 'text-gray-600'}`}>
+            <SkipBack className="w-7 h-7 fill-current" />
           </button>
           <button
             onClick={togglePlay}
@@ -327,8 +347,8 @@ export default function TrackPlayer() {
               <Play className="w-7 h-7 text-black fill-black ml-1" />
             )}
           </button>
-          <button className="p-3 text-white">
-            <SkipForward className="w-7 h-7 fill-white" />
+          <button onClick={handleSkipForward} className={`p-3 transition-colors ${queueIndex >= 0 && queueIndex < queue.length - 1 ? 'text-white' : 'text-gray-600'}`}>
+            <SkipForward className="w-7 h-7 fill-current" />
           </button>
           <button
             onClick={() => setRepeatOn(!repeatOn)}
