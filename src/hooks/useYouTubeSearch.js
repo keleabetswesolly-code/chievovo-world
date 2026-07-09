@@ -14,7 +14,8 @@ export default function useYouTubeSearch() {
     setResults([]);
     try {
       const res = await base44.functions.invoke('youtubeSearch', { query: query.trim() });
-      setResults(res.data?.results || []);
+      const data = res.data?.results || res.results || [];
+      setResults(data);
     } catch (err) {
       setError(err?.response?.data?.error || err?.message || 'Search failed');
     } finally {

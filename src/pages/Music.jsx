@@ -45,6 +45,12 @@ export default function Music() {
     track.artist_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  useEffect(() => {
+    if (searchQuery && filteredTracks.length === 0 && !tracksLoading) {
+      yt.search(searchQuery);
+    }
+  }, [searchQuery, filteredTracks.length, tracksLoading]);
+
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
       {/* Header */}
@@ -180,24 +186,15 @@ export default function Music() {
               <p className="text-gray-500">No tracks found</p>
             </div>
           )}
-        </section>
+          </section>
 
-        {/* YouTube Search Fallback */}
-        {searchQuery && (
+          {/* YouTube Search Fallback — auto-triggered when local results are empty */}
+          {searchQuery && (yt.loading || yt.results.length > 0) && (
           <section className="mt-6">
             <div className="flex items-center gap-2 mb-3">
               <Youtube className="w-4 h-4 text-red-500" />
               <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400">Stream from YouTube</h3>
             </div>
-            {filteredTracks.length === 0 && !yt.results.length && !yt.loading && (
-              <button
-                onClick={() => yt.search(searchQuery)}
-                className="w-full py-3 rounded-2xl text-sm font-semibold text-[#00D4FF] border border-[#00D4FF]/20 hover:bg-[#00D4FF]/10 transition-all"
-                style={{ background: "rgba(0,212,255,0.04)" }}
-              >
-                Search YouTube for "{searchQuery}"
-              </button>
-            )}
             {yt.loading && (
               <div className="flex items-center justify-center py-8 gap-2">
                 <Loader2 className="w-5 h-5 text-[#00D4FF] animate-spin" />
@@ -212,7 +209,7 @@ export default function Music() {
               </div>
             )}
           </section>
-        )}
+          )}
       </div>
 
       <YouTubePlayer activeVideo={yt.activeVideo} onClose={yt.close} />

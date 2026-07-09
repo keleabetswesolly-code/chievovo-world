@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,6 +32,14 @@ export default function Discover() {
   const filteredCollabs = collabs.filter(c => !q || c.title?.toLowerCase().includes(q) || c.genre?.toLowerCase().includes(q));
 
   const hasResults = q && (filteredTracks.length + filteredArtists.length + filteredRooms.length + filteredCollabs.length) > 0;
+
+  useEffect(() => {
+    if (q) {
+      yt.search(query);
+    } else {
+      yt.close();
+    }
+  }, [query]);
 
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
@@ -165,17 +173,12 @@ export default function Discover() {
                 </section>
               )}
 
-              {/* YouTube results */}
-              {q && (
+              {/* YouTube results — auto-triggered with search query */}
+              {q && (yt.loading || yt.results.length > 0) && (
                 <section>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Youtube className="w-4 h-4 text-red-500" />
-                      <h2 className="text-sm font-bold uppercase tracking-widest text-gray-500">Stream on YouTube</h2>
-                    </div>
-                    {!yt.results.length && !yt.loading && (
-                      <button onClick={() => yt.search(query)} className="text-xs text-[#00D4FF] font-semibold">Search</button>
-                    )}
+                  <div className="flex items-center gap-2 mb-3">
+                    <Youtube className="w-4 h-4 text-red-500" />
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-500">Stream on YouTube</h2>
                   </div>
                   {yt.loading && (
                     <div className="flex items-center gap-2 py-4">
