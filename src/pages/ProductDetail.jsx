@@ -73,7 +73,7 @@ export default function ProductDetail() {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-5 py-4 flex items-center justify-between bg-gradient-to-b from-[#0A0A0A] to-transparent">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => window.history.length > 1 ? navigate(-1) : navigate(createPageUrl("Shop"))}
           className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-lg flex items-center justify-center"
         >
           <ArrowLeft className="w-5 h-5" />

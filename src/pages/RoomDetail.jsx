@@ -70,7 +70,7 @@ export default function RoomDetail() {
       {/* Header */}
       <header className="px-5 py-4 flex items-center justify-between border-b border-white/5">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => window.history.length > 1 ? navigate(-1) : navigate(createPageUrl("Live"))}
           className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"
         >
           <ArrowLeft className="w-5 h-5" />

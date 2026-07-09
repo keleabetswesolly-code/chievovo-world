@@ -99,7 +99,7 @@ export default function ArtistDetail() {
         {/* Navigation */}
         <header className="absolute top-0 left-0 right-0 z-10 px-5 py-4 flex items-center justify-between">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => window.history.length > 1 ? navigate(-1) : navigate(createPageUrl("Music"))}
             className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-lg flex items-center justify-center"
           >
             <ArrowLeft className="w-5 h-5" />
