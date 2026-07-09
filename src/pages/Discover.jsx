@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import TrackRow from "@/components/ui/TrackRow";
 import LiveRoomCard from "@/components/ui/LiveRoomCard";
 import useYouTubeSearch from "@/hooks/useYouTubeSearch";
+import { useAudio } from "@/lib/AudioContext";
 import YouTubePlayer from "@/components/ui/YouTubePlayer";
 import YouTubeResultRow from "@/components/ui/YouTubeResultRow";
 
@@ -19,6 +20,7 @@ export default function Discover() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const yt = useYouTubeSearch();
+  const { playTrack, currentTrack, isPlaying, setQueue } = useAudio();
 
   const { data: tracks = [] } = useQuery({ queryKey: ['all-tracks'], queryFn: () => base44.entities.Track.list('-plays', 30) });
   const { data: artists = [] } = useQuery({ queryKey: ['all-artists'], queryFn: () => base44.entities.Artist.list('-followers', 20) });
@@ -156,7 +158,9 @@ export default function Discover() {
                   <h2 className="text-sm font-bold uppercase tracking-widest text-gray-500 mb-3">Tracks ({filteredTracks.length})</h2>
                   <div className="rounded-2xl overflow-hidden border border-white/5">
                     {filteredTracks.slice(0, 5).map((track, i) => (
-                      <TrackRow key={track.id} track={track} index={i} onClick={() => navigate(createPageUrl(`TrackPlayer?id=${track.id}`))} />
+                      <TrackRow key={track.id} track={track} index={i}
+                        isPlaying={currentTrack?.id === track.id && isPlaying}
+                        onClick={() => { playTrack(track); setQueue(filteredTracks); }} />
                     ))}
                   </div>
                 </section>

@@ -11,6 +11,7 @@ import TrackRow from "@/components/ui/TrackRow";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useYouTubeSearch from "@/hooks/useYouTubeSearch";
+import { useAudio } from "@/lib/AudioContext";
 import YouTubePlayer from "@/components/ui/YouTubePlayer";
 import YouTubeResultRow from "@/components/ui/YouTubeResultRow";
 
@@ -21,6 +22,7 @@ export default function Music() {
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const yt = useYouTubeSearch();
+  const { playTrack, togglePlay, currentTrack, isPlaying, setQueue } = useAudio();
 
   const { data: tracks = [], isLoading: tracksLoading } = useQuery({
     queryKey: ['tracks', selectedGenre],
@@ -175,7 +177,8 @@ export default function Music() {
                   key={track.id} 
                   track={track} 
                   index={i}
-                  onClick={() => navigate(createPageUrl(`TrackPlayer?id=${track.id}`))}
+                  isPlaying={currentTrack?.id === track.id && isPlaying}
+                  onClick={() => { playTrack(track); setQueue(filteredTracks); }}
                 />
               ))}
             </div>

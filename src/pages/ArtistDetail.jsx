@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import TrackRow from "@/components/ui/TrackRow";
 import useYouTubeSearch from "@/hooks/useYouTubeSearch";
+import { useAudio } from "@/lib/AudioContext";
 import YouTubePlayer from "@/components/ui/YouTubePlayer";
 import YouTubeResultRow from "@/components/ui/YouTubeResultRow";
 
@@ -37,6 +38,7 @@ export default function ArtistDetail() {
   });
 
   const yt = useYouTubeSearch();
+  const { playTrack, currentTrack, isPlaying, setQueue } = useAudio();
 
   const { data: artist, isLoading } = useQuery({
     queryKey: ['artist', artistId],
@@ -203,7 +205,8 @@ export default function ArtistDetail() {
                   key={track.id}
                   track={track}
                   index={i}
-                  onClick={() => navigate(createPageUrl(`TrackPlayer?id=${track.id}`))}
+                  isPlaying={currentTrack?.id === track.id && isPlaying}
+                  onClick={() => { playTrack(track); setQueue(tracks); }}
                 />
               ))}
             </div>

@@ -3,6 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Home, Music2, Radio, ShoppingBag, Cpu, Users2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { AudioProvider } from "@/lib/AudioContext";
+import MiniPlayer from "@/components/MiniPlayer";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -18,6 +20,7 @@ export default function Layout({ children, currentPageName }) {
   const hideNav = ["ProductDetail", "ArtistDetail", "RoomDetail", "TrackPlayer", "Discover"].includes(currentPageName);
 
   return (
+    <AudioProvider>
     <div className="min-h-screen bg-black text-white font-sans">
       <style>{`
         :root {
@@ -76,6 +79,8 @@ export default function Layout({ children, currentPageName }) {
         </AnimatePresence>
       </main>
 
+      {!hideNav && <MiniPlayer />}
+
       {!hideNav && (
         <nav className="fixed bottom-0 left-0 right-0 z-50 glass-card border-t border-white/5">
           <div className="max-w-lg mx-auto px-1 py-2">
@@ -116,5 +121,6 @@ export default function Layout({ children, currentPageName }) {
         </nav>
       )}
     </div>
+    </AudioProvider>
   );
 }
