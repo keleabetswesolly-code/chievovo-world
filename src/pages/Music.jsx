@@ -27,8 +27,8 @@ export default function Music() {
   const { data: tracks = [], isLoading: tracksLoading } = useQuery({
     queryKey: ['tracks', selectedGenre],
     queryFn: () => selectedGenre === "All" 
-      ? base44.entities.Track.list('-plays', 20)
-      : base44.entities.Track.filter({ genre: selectedGenre }, '-plays', 20),
+      ? base44.entities.Track.list('-plays', 200)
+      : base44.entities.Track.filter({ genre: selectedGenre }, '-plays', 200),
   });
 
   const { data: playlists = [] } = useQuery({
