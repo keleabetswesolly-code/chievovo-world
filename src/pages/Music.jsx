@@ -11,6 +11,7 @@ import TrackRow from "@/components/ui/TrackRow";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useYouTubeSearch from "@/hooks/useYouTubeSearch";
+import useArtistThumbnails from "@/hooks/useArtistThumbnails";
 import { useAudio } from "@/lib/AudioContext";
 import YouTubePlayer from "@/components/ui/YouTubePlayer";
 import YouTubeResultRow from "@/components/ui/YouTubeResultRow";
@@ -23,6 +24,7 @@ export default function Music() {
   const [searchQuery, setSearchQuery] = useState("");
   const yt = useYouTubeSearch();
   const { playTrack, togglePlay, currentTrack, isPlaying, setQueue } = useAudio();
+  const artistThumbnails = useArtistThumbnails(artists);
 
   const { data: tracks = [], isLoading: tracksLoading } = useQuery({
     queryKey: ['tracks', selectedGenre],
@@ -129,7 +131,7 @@ export default function Music() {
                   className="text-center cursor-pointer group"
                 >
                   <Avatar className="w-full aspect-square mb-2 border-2 border-transparent group-hover:border-[#00D4FF] transition-colors">
-                    <AvatarImage src={artist.image_url} className="object-cover" />
+                    <AvatarImage src={artistThumbnails[artist.id] || artist.image_url} className="object-cover" />
                     <AvatarFallback className="bg-gradient-to-br from-[#00D4FF]/20 to-[#FF6B35]/20 text-xl">
                       {artist.name?.charAt(0)}
                     </AvatarFallback>
