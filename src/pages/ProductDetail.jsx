@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useCart } from "@/lib/CartContext";
+import CartDrawer from "@/components/CartDrawer";
 
 export default function ProductDetail() {
   const navigate = useNavigate();
@@ -30,6 +32,9 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showSpecs, setShowSpecs] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [added, setAdded] = useState(false);
+  const { addToCart } = useCart();
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', productId],
@@ -63,7 +68,14 @@ export default function ProductDetail() {
     ? product.images 
     : ["https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800"];
 
-  const colors = product.colors || ["#0A0A0A", "#00D4FF", "#FF6B35"];
+  const colors = product.colors?.length > 0 ? product.colors : ["#0A0A0A", "#00D4FF", "#FF6B35"];
+
+  const handleAddToCart = () => {
+    addToCart(product, quantity, colors[selectedColor]);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+    setCartOpen(true);
+  };
   const discount = product.original_price
     ? Math.round((1 - product.price / product.original_price) * 100)
     : 0;
@@ -246,16 +258,19 @@ export default function ProductDetail() {
       {/* Fixed Bottom Bar */}
       <div className="fixed bottom-0 left-0 right-0 p-5 bg-[#0A0A0A]/95 backdrop-blur-lg border-t border-white/10">
         <div className="flex items-center gap-3">
-          <button className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
+          <button onClick={() => setCartOpen(true)} className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
             <ShoppingCart className="w-6 h-6" />
           </button>
           <Button
-            className="flex-1 h-14 bg-[#00D4FF] hover:bg-[#00D4FF]/90 text-black font-bold text-lg rounded-xl"
+            onClick={handleAddToCart}
+            disabled={!product.in_stock}
+            className="flex-1 h-14 bg-[#00D4FF] hover:bg-[#00D4FF]/90 text-black font-bold text-lg rounded-xl disabled:opacity-50"
           >
-            Buy Now • ${(product.price * quantity).toFixed(2)}
+            {added ? "Added ✓" : `Add to Cart • $${(product.price * quantity).toFixed(2)}`}
           </Button>
         </div>
       </div>
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </div>
   );
 }

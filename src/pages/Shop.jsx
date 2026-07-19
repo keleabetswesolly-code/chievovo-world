@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import ProductCard from "@/components/ui/ProductCard";
 import SectionHeader from "@/components/ui/SectionHeader";
+import CartDrawer from "@/components/CartDrawer";
+import { useCart } from "@/lib/CartContext";
 
 const CATEGORIES = ["All", "Earbuds", "Accessories", "Apparel", "Limited Edition", "Bundles"];
 
@@ -16,6 +18,8 @@ export default function Shop() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [cartOpen, setCartOpen] = useState(false);
+  const { totalItems, addToCart } = useCart();
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products', selectedCategory],
@@ -49,11 +53,13 @@ export default function Shop() {
               <p className="text-xs text-gray-500">Buddyz Audio Gear</p>
             </div>
           </div>
-          <button className="relative w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+          <button onClick={() => setCartOpen(true)} className="relative w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
             <ShoppingCart className="w-5 h-5 text-gray-400" />
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#FF6B35] rounded-full flex items-center justify-center text-xs font-bold">
-              2
-            </span>
+            {totalItems > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#FF6B35] rounded-full flex items-center justify-center text-xs font-bold">
+                {totalItems}
+              </span>
+            )}
           </button>
         </div>
 
@@ -175,6 +181,7 @@ export default function Shop() {
                 <ProductCard
                   product={product}
                   onClick={() => navigate(createPageUrl(`ProductDetail?id=${product.id}`))}
+                  onAddToCart={(e) => { e.stopPropagation(); addToCart(product); setCartOpen(true); }}
                 />
               </motion.div>
             ))}
@@ -187,6 +194,7 @@ export default function Shop() {
           </div>
         )}
       </div>
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </div>
   );
 }

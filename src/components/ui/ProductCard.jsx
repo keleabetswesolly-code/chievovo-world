@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ShoppingBag, Heart } from "lucide-react";
 
-export default function ProductCard({ product, onClick }) {
+export default function ProductCard({ product, onClick, onAddToCart }) {
   const discount = product.original_price 
     ? Math.round((1 - product.price / product.original_price) * 100) 
     : 0;
@@ -43,7 +43,7 @@ export default function ProductCard({ product, onClick }) {
         </div>
         
         <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-          <button className="w-full py-2.5 bg-[#00D4FF] text-black font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-[#00D4FF]/90 transition-colors">
+          <button onClick={onAddToCart} className="w-full py-2.5 bg-[#00D4FF] text-black font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-[#00D4FF]/90 transition-colors">
             <ShoppingBag className="w-4 h-4" />
             Add to Cart
           </button>
