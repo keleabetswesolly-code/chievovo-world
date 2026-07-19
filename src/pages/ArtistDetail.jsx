@@ -28,6 +28,7 @@ export default function ArtistDetail() {
   const [message, setMessage] = useState("");
   const [projectType, setProjectType] = useState("Feature");
   const [submitted, setSubmitted] = useState(false);
+  const [ytThumbnail, setYtThumbnail] = useState(null);
 
   const collabMutation = useMutation({
     mutationFn: (data) => base44.entities.CollabRequest.create(data),
@@ -53,9 +54,13 @@ export default function ArtistDetail() {
     enabled: !!artistId,
   });
 
-  // Auto-load YouTube results once artist name is known
+  // Auto-load YouTube results + artist channel photo once artist name is known
   useEffect(() => {
-    if (artist?.name) yt.search(`${artist.name} music`);
+    if (!artist?.name) return;
+    yt.search(`${artist.name} music`);
+    base44.functions.invoke('youtubeArtistPhoto', { artistName: artist.name })
+      .then(res => { if (res.data?.thumbnail) setYtThumbnail(res.data.thumbnail); })
+      .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [artist?.name]);
 
@@ -92,7 +97,7 @@ export default function ArtistDetail() {
       {/* Header with Cover */}
       <div className="relative h-72">
         <img
-          src={artist.cover_url || artist.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800"}
+          src={artist.cover_url || ytThumbnail || artist.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800"}
           alt={artist.name}
           className="absolute inset-0 w-full h-full object-cover"
         />
@@ -120,7 +125,7 @@ export default function ArtistDetail() {
         <div className="absolute bottom-0 left-0 right-0 p-5">
           <div className="flex items-end gap-4">
             <Avatar className="w-24 h-24 border-4 border-[#0A0A0A]">
-              <AvatarImage src={artist.image_url} className="object-cover" />
+              <AvatarImage src={ytThumbnail || artist.image_url} className="object-cover" />
               <AvatarFallback className="bg-gradient-to-br from-[#00D4FF] to-[#FF6B35] text-3xl font-bold">
                 {artist.name?.charAt(0)}
               </AvatarFallback>
