@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import TrackRow from "@/components/ui/TrackRow";
 import LiveRoomCard from "@/components/ui/LiveRoomCard";
 import useYouTubeSearch from "@/hooks/useYouTubeSearch";
+import useArtistThumbnails from "@/hooks/useArtistThumbnails";
 import { useAudio } from "@/lib/AudioContext";
 import YouTubePlayer from "@/components/ui/YouTubePlayer";
 import YouTubeResultRow from "@/components/ui/YouTubeResultRow";
@@ -21,6 +22,7 @@ export default function Discover() {
   const [query, setQuery] = useState("");
   const yt = useYouTubeSearch();
   const { playTrack, currentTrack, isPlaying, setQueue } = useAudio();
+  const artistThumbnails = useArtistThumbnails(artists);
 
   const { data: tracks = [] } = useQuery({ queryKey: ['all-tracks'], queryFn: () => base44.entities.Track.list('-plays', 30) });
   const { data: artists = [] } = useQuery({ queryKey: ['all-artists'], queryFn: () => base44.entities.Artist.list('-followers', 20) });
@@ -116,10 +118,10 @@ export default function Discover() {
                     className="flex items-center gap-3 p-3 rounded-xl border border-white/5 hover:border-[#00D4FF]/20 transition-all cursor-pointer"
                     style={{ background: 'rgba(17,17,17,0.6)' }}>
                     <Avatar className="w-11 h-11 border border-white/10 flex-shrink-0">
-                      <AvatarImage src={artist.image_url} />
+                      <AvatarImage src={artistThumbnails[artist.id] || artist.image_url} />
                       <AvatarFallback className="bg-white/10">{artist.name?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
+                      </Avatar>
+                      <div className="min-w-0">
                       <p className="font-semibold text-sm truncate">{artist.name}</p>
                       <p className="text-xs text-gray-500">{artist.genre}</p>
                     </div>
@@ -140,8 +142,8 @@ export default function Discover() {
                         className="flex items-center gap-3 p-3 rounded-xl border border-white/5 hover:border-[#00D4FF]/20 transition-all cursor-pointer"
                         style={{ background: 'rgba(17,17,17,0.6)' }}>
                         <Avatar className="w-11 h-11 border border-white/10">
-                          <AvatarImage src={artist.image_url} />
-                          <AvatarFallback className="bg-white/10">{artist.name?.charAt(0)}</AvatarFallback>
+                          <AvatarImage src={artistThumbnails[artist.id] || artist.image_url} />
+                            <AvatarFallback className="bg-white/10">{artist.name?.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-semibold">{artist.name}</p>

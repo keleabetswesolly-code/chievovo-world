@@ -12,6 +12,7 @@ import StatsBar from "@/components/home/StatsBar";
 import FeedCard from "@/components/home/FeedCard";
 import YouTubeSearch from "@/components/home/YouTubeSearch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import useArtistThumbnails from "@/hooks/useArtistThumbnails";
 
 const PILLS = [
   { label: "Discover", icon: Search, page: "Discover", color: "#00D4FF" },
@@ -62,6 +63,8 @@ export default function Home() {
     queryKey: ['products-featured'],
     queryFn: () => base44.entities.Product.filter({ featured: true }, '-created_date', 3),
   });
+
+  const artistThumbnails = useArtistThumbnails(artists);
 
   // Build interleaved TikTok-style feed
   const feedItems = useMemo(() => {
@@ -200,7 +203,7 @@ export default function Home() {
                 >
                   <div className="relative w-[72px] h-[72px] mb-2">
                     <Avatar className="w-full h-full border-2 border-transparent group-hover:border-[#00D4FF] transition-all duration-300">
-                      <AvatarImage src={artist.image_url} className="object-cover" />
+                      <AvatarImage src={artistThumbnails[artist.id] || artist.image_url} className="object-cover" />
                       <AvatarFallback className="text-lg" style={{ background: "linear-gradient(135deg, #00D4FF22, #FF6B3522)" }}>
                         {artist.name?.charAt(0)}
                       </AvatarFallback>
