@@ -4,7 +4,8 @@ import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Search, SlidersHorizontal, ShoppingCart, Package, Headphones, Sparkles } from "lucide-react";
+import { Search, SlidersHorizontal, ShoppingCart, Package, Headphones, Sparkles, Settings } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import ProductCard from "@/components/ui/ProductCard";
@@ -54,6 +55,10 @@ export default function Shop() {
               <p className="text-xs text-gray-500">Buddyz Audio Gear</p>
             </div>
           </div>
+          <div className="flex items-center gap-2">
+          <Link to="/ShopAdmin" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
+            <Settings className="w-5 h-5 text-gray-400" />
+          </Link>
           <button onClick={() => setCartOpen(true)} className="relative w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
             <ShoppingCart className="w-5 h-5 text-gray-400" />
             {totalItems > 0 && (
@@ -62,6 +67,7 @@ export default function Shop() {
               </span>
             )}
           </button>
+          </div>
         </div>
 
         <div className="relative">
