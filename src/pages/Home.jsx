@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Search, Headphones, Play, Radio, Cpu, Users2, Newspaper } from "lucide-react";
+import { UserCircle, Search, Headphones, Play, Radio, Cpu, Users2, Newspaper } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import EcosystemPill from "@/components/home/EcosystemPill";
 import HeroBanner from "@/components/home/HeroBanner";
@@ -164,9 +164,8 @@ export default function Home() {
             <button onClick={() => navigate(createPageUrl("Discover"))} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
               <Search className="w-5 h-5 text-gray-400" />
             </button>
-            <button className="relative w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
-              <Bell className="w-5 h-5 text-gray-400" />
-              <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-[#FF6B35] rounded-full" />
+            <button onClick={() => navigate(createPageUrl("Profile"))} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
+              <UserCircle className="w-5 h-5 text-gray-400" />
             </button>
           </div>
         </div>
