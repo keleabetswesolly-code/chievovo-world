@@ -24,7 +24,6 @@ export default function Music() {
   const [searchQuery, setSearchQuery] = useState("");
   const yt = useYouTubeSearch();
   const { playTrack, togglePlay, currentTrack, isPlaying, setQueue } = useAudio();
-  const artistThumbnails = useArtistThumbnails(artists);
 
   const { data: tracks = [], isLoading: tracksLoading } = useQuery({
     queryKey: ['tracks', selectedGenre],
@@ -42,6 +41,8 @@ export default function Music() {
     queryKey: ['artists-top'],
     queryFn: () => base44.entities.Artist.list('-followers', 10),
   });
+
+  const artistThumbnails = useArtistThumbnails(artists);
 
   const filteredTracks = tracks.filter(track => 
     !searchQuery || 
