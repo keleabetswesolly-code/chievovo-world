@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/lib/CartContext";
 import CartDrawer from "@/components/CartDrawer";
+import { formatPrice } from "@/lib/currency";
 
 export default function ProductDetail() {
   const navigate = useNavigate();
@@ -155,9 +156,9 @@ export default function ProductDetail() {
         {/* Name & Price */}
         <h1 className="text-2xl font-black mb-2">{product.name}</h1>
         <div className="flex items-center gap-3 mb-6">
-          <span className="text-3xl font-black">${product.price}</span>
+          <span className="text-3xl font-black">{formatPrice(product.price)}</span>
           {product.original_price && (
-            <span className="text-lg text-gray-500 line-through">${product.original_price}</span>
+            <span className="text-lg text-gray-500 line-through">{formatPrice(product.original_price)}</span>
           )}
         </div>
 
@@ -266,7 +267,7 @@ export default function ProductDetail() {
             disabled={!product.in_stock}
             className="flex-1 h-14 bg-[#00D4FF] hover:bg-[#00D4FF]/90 text-black font-bold text-lg rounded-xl disabled:opacity-50"
           >
-            {added ? "Added ✓" : `Add to Cart • $${(product.price * quantity).toFixed(2)}`}
+            {added ? "Added ✓" : `Add to Cart • ${formatPrice(product.price * quantity)}`}
           </Button>
         </div>
       </div>

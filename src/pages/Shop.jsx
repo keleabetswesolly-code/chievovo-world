@@ -11,6 +11,7 @@ import ProductCard from "@/components/ui/ProductCard";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CartDrawer from "@/components/CartDrawer";
 import { useCart } from "@/lib/CartContext";
+import { formatPrice } from "@/lib/currency";
 
 const CATEGORIES = ["All", "Earbuds", "Accessories", "Apparel", "Limited Edition", "Bundles"];
 
@@ -124,9 +125,9 @@ export default function Shop() {
               </span>
               <h2 className="text-2xl font-black mt-1 mb-2">{featuredProducts[0].name}</h2>
               <div className="flex items-center gap-3">
-                <span className="text-2xl font-bold">${featuredProducts[0].price}</span>
+                <span className="text-2xl font-bold">{formatPrice(featuredProducts[0].price)}</span>
                 {featuredProducts[0].original_price && (
-                  <span className="text-gray-400 line-through">${featuredProducts[0].original_price}</span>
+                  <span className="text-gray-400 line-through">{formatPrice(featuredProducts[0].original_price)}</span>
                 )}
                 <button className="ml-auto px-6 py-2.5 bg-[#00D4FF] text-black font-bold rounded-full hover:bg-[#00D4FF]/90 transition-colors">
                   Shop Now
@@ -139,7 +140,7 @@ export default function Shop() {
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-3 mb-8">
           {[
-            { icon: Package, label: "Free Shipping", desc: "On orders $100+" },
+            { icon: Package, label: "Free Shipping", desc: "On qualifying orders" },
             { icon: Headphones, label: "30-Day Trial", desc: "Risk-free" },
             { icon: Sparkles, label: "2yr Warranty", desc: "Full coverage" },
           ].map((item, i) => (

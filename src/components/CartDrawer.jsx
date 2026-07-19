@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/CartContext";
 import { Button } from "@/components/ui/button";
+import { formatPrice } from "@/lib/currency";
 
 export default function CartDrawer({ open, onClose }) {
   const { items, updateQuantity, removeFromCart, totalItems, totalPrice } = useCart();
@@ -67,7 +68,7 @@ export default function CartDrawer({ open, onClose }) {
                           <span className="text-xs text-gray-500">Color</span>
                         </div>
                       )}
-                      <p className="text-[#00D4FF] font-bold mt-1">${(item.product.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-[#00D4FF] font-bold mt-1">{formatPrice(item.product.price * item.quantity)}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <button
                           onClick={() => updateQuantity(item.product.id, item.color, item.quantity - 1)}
@@ -100,10 +101,10 @@ export default function CartDrawer({ open, onClose }) {
               <div className="px-5 py-4 border-t border-white/10 space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Subtotal</span>
-                  <span className="text-xl font-black">${totalPrice.toFixed(2)}</span>
+                  <span className="text-xl font-black">{formatPrice(totalPrice)}</span>
                 </div>
                 <Button className="w-full h-14 bg-[#00D4FF] hover:bg-[#00D4FF]/90 text-black font-bold text-base rounded-xl">
-                  Checkout • ${totalPrice.toFixed(2)}
+                  Checkout • {formatPrice(totalPrice)}
                 </Button>
               </div>
             )}
