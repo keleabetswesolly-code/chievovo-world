@@ -149,10 +149,12 @@ export default function Home() {
       {/* Header */}
       <header className="sticky top-0 z-40 px-5 py-4 bg-gradient-to-b from-[#0A0A0A] via-[#0A0A0A]/95 to-transparent">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #00D4FF, #FF6B35)" }}>
-              <Headphones className="w-5 h-5 text-black" strokeWidth={2.5} />
-            </div>
+          <div className="flex items-center gap-2">
+            <img
+              src="https://media.base44.com/images/public/69a791e052caf5d23b3b4005/2750bf44e_1000229494-removebg-preview.png"
+              alt="Chievovo Logo"
+              className="h-10 w-auto object-contain"
+            />
             <div>
               <h1 className="text-xl font-black tracking-tight leading-none" style={{ background: "linear-gradient(135deg, #00D4FF 0%, #FF6B35 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                 CHIEVOVO WORLD
