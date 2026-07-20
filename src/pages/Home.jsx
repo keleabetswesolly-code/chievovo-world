@@ -153,7 +153,7 @@ export default function Home() {
             <img
               src="https://media.base44.com/images/public/69a791e052caf5d23b3b4005/2750bf44e_1000229494-removebg-preview.png"
               alt="Chievovo Logo"
-              className="h-10 w-auto object-contain"
+              className="h-20 w-auto object-contain"
             />
             <div>
               <h1 className="text-xl font-black tracking-tight leading-none" style={{ background: "linear-gradient(135deg, #00D4FF 0%, #FF6B35 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
