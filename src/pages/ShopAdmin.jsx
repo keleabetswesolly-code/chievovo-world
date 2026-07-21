@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,6 +14,8 @@ import { Link } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from "recharts";
 
 const CATEGORIES = ["Earbuds", "Accessories", "Apparel", "Limited Edition", "Bundles"];
+const ADMIN_PASSWORD = "@Chievovo2026";
+const SESSION_KEY = "shopAdminAuth";
 
 const emptyProduct = {
   name: "", description: "", price: "", original_price: "",
@@ -22,18 +24,67 @@ const emptyProduct = {
 };
 
 export default function ShopAdmin() {
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem(SESSION_KEY) === "1");
+  const [pwInput, setPwInput] = useState("");
+  const [pwError, setPwError] = useState(false);
   const qc = useQueryClient();
-  const [view, setView] = useState("dashboard"); // dashboard | list | form
+  const [view, setView] = useState("dashboard");
   const [editingProduct, setEditingProduct] = useState(null);
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["admin-products"],
     queryFn: () => base44.entities.Product.list("-created_date", 100),
   });
+
+  const handleLogin = () => {
+    if (pwInput === ADMIN_PASSWORD) {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      setAuthed(true);
+      setPwError(false);
+    } else {
+      setPwError(true);
+      setPwInput("");
+    }
+  };
+
+  if (!authed) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-sm bg-[#111] border border-white/10 rounded-3xl p-8"
+        >
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 mx-auto"
+            style={{ background: "linear-gradient(135deg, #00D4FF22, #FF6B3522)" }}>
+            <Package className="w-7 h-7 text-[#00D4FF]" />
+          </div>
+          <h1 className="text-xl font-black text-white text-center mb-1">Admin Access</h1>
+          <p className="text-sm text-gray-500 text-center mb-6">Enter the admin password to continue</p>
+          <input
+            type="password"
+            value={pwInput}
+            onChange={e => { setPwInput(e.target.value); setPwError(false); }}
+            onKeyDown={e => e.key === "Enter" && handleLogin()}
+            placeholder="Password"
+            className={`w-full px-4 py-3 rounded-xl bg-white/5 border text-white text-sm placeholder:text-gray-600 focus:outline-none focus:ring-1 mb-3 ${
+              pwError ? "border-red-500 focus:ring-red-500" : "border-white/10 focus:ring-[#00D4FF]"
+            }`}
+          />
+          {pwError && <p className="text-xs text-red-400 mb-3 text-center">Incorrect password. Try again.</p>}
+          <button
+            onClick={handleLogin}
+            className="w-full py-3 rounded-xl bg-[#00D4FF] text-black font-bold text-sm hover:bg-[#00D4FF]/90 transition-colors"
+          >
+            Unlock
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
