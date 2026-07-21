@@ -1,0 +1,38 @@
+{
+  "name": "YouTubeArtistCache",
+  "type": "object",
+  "properties": {
+    "channel_id": {
+      "type": "string",
+      "description": "YouTube channel ID (primary lookup key)"
+    },
+    "artist_name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "profile_picture_url": {
+      "type": "string"
+    },
+    "subscriber_count": {
+      "type": "number"
+    },
+    "etag": {
+      "type": "string",
+      "description": "ETag from YouTube API response"
+    },
+    "raw_data": {
+      "type": "string",
+      "description": "Full JSON payload from YouTube API"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "7-day TTL for artist data"
+    }
+  },
+  "required": [
+    "channel_id"
+  ]
+}

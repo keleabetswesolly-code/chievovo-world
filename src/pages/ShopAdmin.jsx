@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/currency";
 import { Link } from "react-router-dom";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from "recharts";
 
 const CATEGORIES = ["Earbuds", "Accessories", "Apparel", "Limited Edition", "Bundles"];
 
@@ -188,30 +189,51 @@ export default function ShopAdmin() {
               ))}
             </div>
 
-            {/* Category Breakdown */}
-            <h2 className="text-base font-bold mb-4">By Category</h2>
-            <div className="space-y-3 mb-8">
-              {CATEGORIES.map(cat => {
-                const count = products.filter(p => p.category === cat).length;
-                const pct = totalProducts ? Math.round((count / totalProducts) * 100) : 0;
+            {/* Top Products by Price Chart */}
+            <h2 className="text-base font-bold mb-4">Top Products by Price</h2>
+            <div className="rounded-2xl bg-white/5 border border-white/5 p-4 mb-6">
+              {products.length === 0 ? (
+                <p className="text-gray-500 text-sm text-center py-6">No products yet</p>
+              ) : (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={[...products].sort((a, b) => b.price - a.price).slice(0, 6).map(p => ({ name: p.name.length > 12 ? p.name.slice(0, 12) + "…" : p.name, price: p.price }))}>
+                    <XAxis dataKey="name" tick={{ fill: "#9ca3af", fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "#9ca3af", fontSize: 10 }} axisLine={false} tickLine={false} width={45} tickFormatter={v => `$${v}`} />
+                    <Tooltip
+                      contentStyle={{ background: "#111", border: "1px solid #222", borderRadius: 12, color: "#fff", fontSize: 12 }}
+                      formatter={(v) => [formatPrice(v), "Price"]}
+                    />
+                    <Bar dataKey="price" radius={[6, 6, 0, 0]}>
+                      {[...products].sort((a, b) => b.price - a.price).slice(0, 6).map((_, i) => (
+                        <Cell key={i} fill={i === 0 ? "#00D4FF" : i === 1 ? "#FF6B35" : "#ffffff22"} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            {/* Category Breakdown Chart */}
+            <h2 className="text-base font-bold mb-4">Sales by Category</h2>
+            <div className="rounded-2xl bg-white/5 border border-white/5 p-4 mb-6">
+              {products.length === 0 ? (
+                <p className="text-gray-500 text-sm text-center py-6">No products yet</p>
+              ) : (() => {
+                const COLORS = ["#00D4FF", "#FF6B35", "#22c55e", "#eab308", "#a855f7"];
+                const catData = CATEGORIES
+                  .map((cat, i) => ({ name: cat, value: products.filter(p => p.category === cat).length, fill: COLORS[i % COLORS.length] }))
+                  .filter(d => d.value > 0);
                 return (
-                  <div key={cat}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-400">{cat}</span>
-                      <span className="font-semibold">{count}</span>
-                    </div>
-                    <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${pct}%` }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="h-full rounded-full"
-                        style={{ background: "linear-gradient(90deg, #00D4FF, #FF6B35)" }}
-                      />
-                    </div>
-                  </div>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie data={catData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label={({ name, percent }) => `${name.split(" ")[0]} ${(percent * 100).toFixed(0)}%`} labelLine={false} fontSize={10}>
+                        {catData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+                      </Pie>
+                      <Tooltip contentStyle={{ background: "#111", border: "1px solid #222", borderRadius: 12, color: "#fff", fontSize: 12 }} />
+                    </PieChart>
+                  </ResponsiveContainer>
                 );
-              })}
+              })()}
             </div>
 
             {/* Recent Products */}

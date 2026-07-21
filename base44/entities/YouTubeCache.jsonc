@@ -1,0 +1,40 @@
+{
+  "name": "YouTubeCache",
+  "type": "object",
+  "properties": {
+    "video_id": {
+      "type": "string",
+      "description": "YouTube video ID (primary lookup key)"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "thumbnail_url": {
+      "type": "string"
+    },
+    "channel_id": {
+      "type": "string"
+    },
+    "channel_title": {
+      "type": "string"
+    },
+    "etag": {
+      "type": "string",
+      "description": "ETag from YouTube API response"
+    },
+    "raw_data": {
+      "type": "string",
+      "description": "Full JSON payload from YouTube API"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "video_id"
+  ]
+}
