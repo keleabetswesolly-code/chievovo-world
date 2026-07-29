@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import usePullToRefresh from "@/hooks/usePullToRefresh";
 import { UserCircle, Search, Headphones, Play, Radio, Cpu, Users2, Newspaper } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import EcosystemPill from "@/components/home/EcosystemPill";
@@ -26,6 +27,7 @@ const PILLS = [
 
 export default function Home() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: tracks = [] } = useQuery({
     queryKey: ['tracks-featured'],
@@ -65,6 +67,14 @@ export default function Home() {
   });
 
   const artistThumbnails = useArtistThumbnails(artists);
+
+  const ptr = usePullToRefresh(() => {
+    queryClient.invalidateQueries({ queryKey: ['tracks-featured'] });
+    queryClient.invalidateQueries({ queryKey: ['live-rooms'] });
+    queryClient.invalidateQueries({ queryKey: ['artists'] });
+    queryClient.invalidateQueries({ queryKey: ['mixes-home'] });
+    queryClient.invalidateQueries({ queryKey: ['community-home'] });
+  });
 
   // Build interleaved TikTok-style feed
   const feedItems = useMemo(() => {
@@ -145,7 +155,7 @@ export default function Home() {
   }, [liveRooms, playlists, mixes, communityPosts, techPosts, products, collabs]);
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen bg-[#0A0A0A]" {...ptr}>
       {/* Header */}
       <header className="sticky top-0 z-40 px-5 py-4 bg-gradient-to-b from-[#0A0A0A] via-[#0A0A0A]/95 to-transparent">
         <div className="flex items-center justify-between">

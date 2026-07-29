@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import usePullToRefresh from "@/hooks/usePullToRefresh";
 import { Search, SlidersHorizontal, Play, Shuffle, Youtube, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FeaturedCard from "@/components/ui/FeaturedCard";
@@ -20,8 +21,9 @@ const GENRES = ["All", "Afrobeats", "Amapiano", "Afro House", "Afro Tech", "Gqom
 
 export default function Music() {
   const navigate = useNavigate();
-  const [selectedGenre, setSelectedGenre] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
+  const queryClient = useQueryClient();
+  const [selectedGenre, setSelectedGenre] = useState(() => sessionStorage.getItem("music_genre") || "All");
+  const [searchQuery, setSearchQuery] = useState(() => sessionStorage.getItem("music_search") || "");
   const yt = useYouTubeSearch();
   const { playTrack, togglePlay, currentTrack, isPlaying, setQueue } = useAudio();
 
@@ -44,6 +46,15 @@ export default function Music() {
 
   const artistThumbnails = useArtistThumbnails(artists);
 
+  const handleSetGenre = (g) => { setSelectedGenre(g); sessionStorage.setItem("music_genre", g); };
+  const handleSetSearch = (v) => { setSearchQuery(v); sessionStorage.setItem("music_search", v); };
+
+  const ptr = usePullToRefresh(() => {
+    queryClient.invalidateQueries({ queryKey: ['tracks'] });
+    queryClient.invalidateQueries({ queryKey: ['playlists'] });
+    queryClient.invalidateQueries({ queryKey: ['artists-top'] });
+  });
+
   const filteredTracks = tracks.filter(track => 
     !searchQuery || 
     track.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -57,7 +68,7 @@ export default function Music() {
   }, [searchQuery, filteredTracks.length, tracksLoading]);
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen bg-[#0A0A0A]" {...ptr}>
       {/* Header */}
       <header className="sticky top-0 z-40 px-5 py-4 bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-between mb-4">
@@ -72,7 +83,7 @@ export default function Music() {
           <Input 
             placeholder="Search tracks, artists..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSetSearch(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-white/5 border-0 rounded-xl text-white placeholder:text-gray-500 focus-visible:ring-1 focus-visible:ring-[#00D4FF]"
           />
         </div>
@@ -85,7 +96,7 @@ export default function Music() {
             {GENRES.map((genre) => (
               <button
                 key={genre}
-                onClick={() => setSelectedGenre(genre)}
+                onClick={() => handleSetGenre(genre)}
                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                   selectedGenre === genre
                     ? "bg-[#00D4FF] text-black"

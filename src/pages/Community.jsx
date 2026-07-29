@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import usePullToRefresh from "@/hooks/usePullToRefresh";
 import { Users2, Plus, Heart, MessageCircle, Repeat2, Play, Image, Mic, X, Send } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ export default function Community() {
   const queryClient = useQueryClient();
   const [showCompose, setShowCompose] = useState(false);
   const [content, setContent] = useState("");
-  const [selectedTag, setSelectedTag] = useState("");
+  const [selectedTag, setSelectedTag] = useState(() => sessionStorage.getItem("community_tag") || "");
   const [likedPosts, setLikedPosts] = useState(new Set());
 
   const { data: posts = [], isLoading } = useQuery({
@@ -39,6 +40,12 @@ export default function Community() {
     likeMutation.mutate({ id: post.id, likes: (post.likes || 0) + (wasLiked ? -1 : 1) });
   };
 
+  const ptr = usePullToRefresh(() => {
+    queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+  });
+
+  const handleSetTag = (tag) => { setSelectedTag(tag); sessionStorage.setItem("community_tag", tag); };
+
   const formatNum = (n) => {
     if (!n) return "0";
     if (n >= 1000) return (n / 1000).toFixed(1) + "K";
@@ -46,7 +53,7 @@ export default function Community() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen bg-[#0A0A0A]" {...ptr}>
       <header className="sticky top-0 z-40 px-5 py-4 bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -65,11 +72,11 @@ export default function Community() {
 
         {/* Tag Filter */}
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-          <button onClick={() => setSelectedTag("")}
+          <button onClick={() => handleSetTag("")}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${!selectedTag ? 'text-black' : 'bg-white/5 text-gray-400 border border-white/10'}`}
             style={!selectedTag ? { background: '#00D4FF' } : {}}>All</button>
           {TAGS.map(tag => (
-            <button key={tag} onClick={() => setSelectedTag(selectedTag === tag ? "" : tag)}
+            <button key={tag} onClick={() => handleSetTag(selectedTag === tag ? "" : tag)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${selectedTag === tag ? 'text-black' : 'bg-white/5 text-gray-400 border border-white/10'}`}
               style={selectedTag === tag ? { background: '#FF6B35' } : {}}>
               {tag}

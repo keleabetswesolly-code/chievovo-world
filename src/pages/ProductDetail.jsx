@@ -257,7 +257,7 @@ export default function ProductDetail() {
       </div>
 
       {/* Fixed Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 p-5 bg-[#0A0A0A]/95 backdrop-blur-lg border-t border-white/10">
+      <div className="fixed bottom-0 left-0 right-0 px-5 pt-4 bg-[#0A0A0A]/95 backdrop-blur-lg border-t border-white/10" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)" }}>
         <div className="flex items-center gap-3">
           <button onClick={() => setCartOpen(true)} className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
             <ShoppingCart className="w-6 h-6" />
