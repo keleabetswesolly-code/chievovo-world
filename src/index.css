@@ -82,7 +82,13 @@
     @apply border-border outline-ring/50;
   }
 
-  body {
+  html, body {
+    overscroll-behavior-y: none;
     @apply bg-background text-foreground;
+  }
+
+  button, a, [role="tab"], [role="button"], nav, .glass-card {
+    user-select: none;
+    -webkit-user-select: none;
   }
 }

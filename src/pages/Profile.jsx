@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Settings, Heart, Clock, Headphones, ChevronRight, LogOut,
   Bell, Shield, HelpCircle, Volume2, Edit3, Cpu, Users2,
-  Newspaper, Check, X, Music2, Layers
+  Newspaper, Check, X, Music2, Layers, Trash2
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ export default function Profile() {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Real liked tracks from localStorage
   const likedCount = Object.keys(
@@ -64,6 +65,12 @@ export default function Profile() {
   };
 
   const handleLogout = () => base44.auth.logout();
+
+  const handleDeleteAccount = async () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    await base44.auth.logout("/");
+  };
 
   const stats = [
     { label: "Tracks", value: tracks.length || 0 },
@@ -243,8 +250,59 @@ export default function Profile() {
           Sign Out
         </Button>
 
-        <p className="text-center text-xs text-gray-600 mt-6">CHIEVOVO World v1.0.0</p>
+        {/* Delete Account */}
+        <div className="mt-8 mb-6">
+          <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4">
+            <h3 className="text-sm font-bold text-red-400 mb-1">Danger Zone</h3>
+            <p className="text-xs text-gray-500 mb-3">Once you delete your account, there is no going back.</p>
+            <Button
+              onClick={() => setShowDeleteConfirm(true)}
+              variant="ghost"
+              className="w-full py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl border border-red-500/20"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Account
+            </Button>
+          </div>
+        </div>
+
+        <p className="text-center text-xs text-gray-600 mt-2">CHIEVOVO World v1.0.0</p>
       </div>
+
+      {/* Delete Account Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-5">
+          <div className="absolute inset-0 bg-black/80" onClick={() => setShowDeleteConfirm(false)} />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative z-10 w-full max-w-sm bg-[#111] border border-white/10 rounded-3xl p-6"
+          >
+            <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-7 h-7 text-red-400" />
+            </div>
+            <h3 className="text-lg font-black text-center mb-2">Delete Account?</h3>
+            <p className="text-sm text-gray-400 text-center mb-6">
+              This will permanently delete your account and all associated data. This action <span className="text-red-400 font-semibold">cannot be undone</span>.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowDeleteConfirm(false)}
+                variant="ghost"
+                className="flex-1 py-3 rounded-xl border border-white/10 hover:bg-white/5"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteAccount}
+                className="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600"
+              >
+                Delete
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

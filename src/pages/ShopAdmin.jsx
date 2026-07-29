@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatPrice } from "@/lib/currency";
 import { Link } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from "recharts";
@@ -371,10 +372,16 @@ export default function ShopAdmin() {
               </div>
 
               <Field label="Category">
-                <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                  className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-1 focus:ring-[#00D4FF]">
-                  {CATEGORIES.map(c => <option key={c} value={c} className="bg-[#111]">{c}</option>)}
-                </select>
+                <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white focus:ring-[#00D4FF]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#111] border-white/10 text-white">
+                    {CATEGORIES.map(c => (
+                      <SelectItem key={c} value={c} className="focus:bg-white/10 focus:text-white">{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
 
               <Field label="Image URLs">
