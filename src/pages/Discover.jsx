@@ -48,7 +48,7 @@ export default function Discover() {
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
       {/* Header */}
-      <header className="sticky top-0 z-40 px-5 py-4 bg-[#0A0A0A]/95 backdrop-blur-lg">
+      <header className="sticky top-0 z-40 px-5 bg-[#0A0A0A]/95 backdrop-blur-lg" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingBottom: '16px' }}>
         <div className="flex items-center gap-3 mb-4">
           <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate(createPageUrl("Home"))} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center flex-shrink-0">
             <ArrowLeft className="w-5 h-5" />

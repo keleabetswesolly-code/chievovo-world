@@ -54,7 +54,17 @@ export default function Community() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A]" {...ptr}>
-      <header className="sticky top-0 z-40 px-5 py-4 bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-white/5">
+      {ptr.isRefreshing && (
+        <div className="flex justify-center py-3">
+          <div className="w-6 h-6 border-2 border-white/20 border-t-[#00D4FF] rounded-full animate-spin" />
+        </div>
+      )}
+      {!ptr.isRefreshing && ptr.pullProgress > 0 && (
+        <div className="flex justify-center py-3">
+          <div className="w-6 h-6 border-2 border-white/20 border-t-[#00D4FF] rounded-full" style={{ transform: `rotate(${ptr.pullProgress * 360}deg)` }} />
+        </div>
+      )}
+      <header className="sticky top-0 z-40 px-5 bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-white/5" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingBottom: '16px' }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #00D4FF, #FF6B35)' }}>

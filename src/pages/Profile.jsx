@@ -96,7 +96,7 @@ export default function Profile() {
       {/* Header */}
       <header className="relative">
         <div className="absolute inset-0 h-48 bg-gradient-to-b from-[#00D4FF]/20 to-transparent" />
-        <div className="relative px-5 py-4">
+        <div className="relative px-5" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingBottom: '16px' }}>
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-black">Profile</h1>
             <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
