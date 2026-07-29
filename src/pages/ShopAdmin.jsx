@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import BottomSheetSelect from "@/components/ui/BottomSheetSelect";
 import { formatPrice } from "@/lib/currency";
 import { Link } from "react-router-dom";
 import SalesDashboard from "@/components/admin/SalesDashboard";
@@ -159,6 +159,10 @@ export default function ShopAdmin() {
   const quickUpdatePrice = async (product, newPrice) => {
     const val = parseFloat(newPrice);
     if (isNaN(val) || val <= 0) return;
+    // Optimistic update
+    qc.setQueryData(["admin-products"], old =>
+      old?.map(p => p.id === product.id ? { ...p, price: val } : p) ?? old
+    );
     await base44.entities.Product.update(product.id, { price: val });
     qc.invalidateQueries({ queryKey: ["admin-products"] });
     qc.invalidateQueries({ queryKey: ["products"] });
@@ -381,16 +385,11 @@ export default function ShopAdmin() {
               </div>
 
               <Field label="Category">
-                <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white focus:ring-[#00D4FF]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#111] border-white/10 text-white">
-                    {CATEGORIES.map(c => (
-                      <SelectItem key={c} value={c} className="focus:bg-white/10 focus:text-white">{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <BottomSheetSelect
+                  value={form.category}
+                  onValueChange={v => setForm(f => ({ ...f, category: v }))}
+                  options={CATEGORIES}
+                />
               </Field>
 
               <Field label="Image URLs">

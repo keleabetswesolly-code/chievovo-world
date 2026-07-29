@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import usePullToRefresh from "@/hooks/usePullToRefresh";
 import { Cpu, Plus, Search, Users, Music2, Sliders, Play, ArrowLeft, Mic, Zap, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -17,8 +18,14 @@ const DAWS = ["FL Studio", "Ableton", "Logic Pro", "Pro Tools", "GarageBand"];
 export default function Collab() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState("explore");
+
+  const ptr = usePullToRefresh(() => {
+    queryClient.invalidateQueries({ queryKey: ['collab-projects'] });
+    queryClient.invalidateQueries({ queryKey: ['collabs-home'] });
+  });
   const [showCreate, setShowCreate] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => sessionStorage.getItem("collab_search") || "");
+  const handleSetSearch = (v) => { setSearch(v); sessionStorage.setItem("collab_search", v); };
   const [newProject, setNewProject] = useState({ title: "", description: "", genre: "", bpm: "", key: "", daw: "FL Studio", roles_needed: [] });
 
   const { data: projects = [], isLoading } = useQuery({
@@ -47,8 +54,18 @@ export default function Collab() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      <header className="sticky top-0 z-40 px-5 py-4 bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-white/5">
+    <div className="min-h-screen bg-[#0A0A0A]" {...ptr}>
+      {ptr.isRefreshing && (
+        <div className="flex justify-center py-3">
+          <div className="w-6 h-6 border-2 border-white/20 border-t-[#00D4FF] rounded-full animate-spin" />
+        </div>
+      )}
+      {!ptr.isRefreshing && ptr.pullProgress > 0 && (
+        <div className="flex justify-center py-3">
+          <div className="w-6 h-6 border-2 border-white/20 border-t-[#00D4FF] rounded-full" style={{ transform: `rotate(${ptr.pullProgress * 360}deg)` }} />
+        </div>
+      )}
+      <header className="sticky top-0 z-40 px-5 bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-white/5" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingBottom: '16px' }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #00D4FF, #FF6B35)' }}>
@@ -70,7 +87,7 @@ export default function Collab() {
 
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search projects, genres, DAWs..."
+          <Input value={search} onChange={e => handleSetSearch(e.target.value)} placeholder="Search projects, genres, DAWs..."
             className="w-full pl-11 bg-white/5 border-0 rounded-xl text-white placeholder:text-gray-500 focus-visible:ring-1 focus-visible:ring-[#00D4FF]" />
         </div>
       </header>

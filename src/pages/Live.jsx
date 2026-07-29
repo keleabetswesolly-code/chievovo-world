@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import usePullToRefresh from "@/hooks/usePullToRefresh";
 import { Radio, Calendar, Plus, Users, Mic2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import LiveRoomCard from "@/components/ui/LiveRoomCard";
@@ -14,8 +15,18 @@ const CATEGORIES = ["All", "DJ Set", "Production Workshop", "Music Talk", "Colla
 
 export default function Live() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("live");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem("live_tab") || "live");
+  const [selectedCategory, setSelectedCategory] = useState(() => sessionStorage.getItem("live_category") || "All");
+
+  const setActiveTabPersist = (v) => { setActiveTab(v); sessionStorage.setItem("live_tab", v); };
+  const setSelectedCategoryPersist = (v) => { setSelectedCategory(v); sessionStorage.setItem("live_category", v); };
+
+  const ptr = usePullToRefresh(() => {
+    queryClient.invalidateQueries({ queryKey: ['live-rooms-all'] });
+    queryClient.invalidateQueries({ queryKey: ['scheduled-rooms'] });
+    queryClient.invalidateQueries({ queryKey: ['live-rooms'] });
+  });
 
   const { data: liveRooms = [], isLoading: liveLoading } = useQuery({
     queryKey: ['live-rooms-all'],
@@ -36,7 +47,17 @@ export default function Live() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen bg-[#0A0A0A]" {...ptr}>
+      {ptr.isRefreshing && (
+        <div className="flex justify-center py-3">
+          <div className="w-6 h-6 border-2 border-white/20 border-t-[#00D4FF] rounded-full animate-spin" />
+        </div>
+      )}
+      {!ptr.isRefreshing && ptr.pullProgress > 0 && (
+        <div className="flex justify-center py-3">
+          <div className="w-6 h-6 border-2 border-white/20 border-t-[#00D4FF] rounded-full" style={{ transform: `rotate(${ptr.pullProgress * 360}deg)` }} />
+        </div>
+      )}
       {/* Header */}
       <header className="sticky top-0 z-40 px-5 bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-white/5" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingBottom: '16px' }}>
         <div className="flex items-center justify-between mb-4">
@@ -56,7 +77,7 @@ export default function Live() {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTabPersist} className="w-full">
           <TabsList className="w-full bg-white/5 p-1 rounded-xl">
             <TabsTrigger 
               value="live" 
@@ -83,7 +104,7 @@ export default function Live() {
             {CATEGORIES.map((category) => (
               <button
                 key={category}
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => setSelectedCategoryPersist(category)}
                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                   selectedCategory === category
                     ? "bg-[#FF6B35] text-white"

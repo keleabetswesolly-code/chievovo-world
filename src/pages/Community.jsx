@@ -31,7 +31,18 @@ export default function Community() {
 
   const likeMutation = useMutation({
     mutationFn: ({ id, likes }) => base44.entities.CommunityPost.update(id, { likes }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['community-posts'] })
+    onMutate: async ({ id, likes }) => {
+      await queryClient.cancelQueries({ queryKey: ['community-posts'] });
+      const prev = queryClient.getQueryData(['community-posts']);
+      queryClient.setQueryData(['community-posts'], old =>
+        old?.map(p => p.id === id ? { ...p, likes } : p) ?? old
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['community-posts'], ctx.prev);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['community-posts'] }),
   });
 
   const handleLike = (post) => {
