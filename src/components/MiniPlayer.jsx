@@ -6,7 +6,8 @@ import { useAudio } from "@/lib/AudioContext";
 import { createPageUrl } from "@/utils";
 
 export default function MiniPlayer() {
-  const { currentTrack, isPlaying, isResolving, togglePlay, clearTrack, iframeRef } = useAudio();
+  const { currentTrack, isPlaying, isResolving, togglePlay, clearTrack, iframeRef, currentTime, duration } = useAudio();
+  const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
   const navigate = useNavigate();
   const videoId = currentTrack?.videoId;
 
@@ -31,6 +32,12 @@ export default function MiniPlayer() {
               />
             </div>
           )}
+
+          {/* Progress bar */}
+          <div className="h-0.5 rounded-full bg-white/10 overflow-hidden mb-0.5">
+            <div className="h-full rounded-full bg-gradient-to-r from-[#00D4FF] to-[#FF6B35] transition-all duration-1000"
+              style={{ width: `${progressPct}%` }} />
+          </div>
 
           <div
             className="flex items-center gap-3 px-3 py-2.5 rounded-2xl"

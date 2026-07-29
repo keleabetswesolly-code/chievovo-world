@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useRef, useCallback } from "react";
+import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 
 const AudioContext = createContext(null);
@@ -21,16 +21,74 @@ export function AudioProvider({ children }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isResolving, setIsResolving] = useState(false); // true while background YT search is in-flight
   const [queue, setQueue] = useState([]);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const iframeRef = useRef(null);
+  const pollRef = useRef(null);
+
+  // Poll YouTube iframe for currentTime/duration every second
+  const startPolling = useCallback(() => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = setInterval(() => {
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: "listening", id: 1 }), "*"
+      );
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: "getCurrentTime", args: [] }), "*"
+      );
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: "getDuration", args: [] }), "*"
+      );
+    }, 1000);
+  }, []);
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+  }, []);
+
+  // Listen for YouTube API messages
+  useEffect(() => {
+    const handler = (e) => {
+      try {
+        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        if (data?.event === "infoDelivery" && data?.info) {
+          if (typeof data.info.currentTime === "number") setCurrentTime(data.info.currentTime);
+          if (typeof data.info.duration === "number" && data.info.duration > 0) setDuration(data.info.duration);
+          if (typeof data.info.playerState === "number") {
+            // 1 = playing, 2 = paused, 0 = ended
+            if (data.info.playerState === 1) setIsPlaying(true);
+            if (data.info.playerState === 2) setIsPlaying(false);
+          }
+        }
+      } catch {}
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
+
+  // Start/stop polling when playing state changes
+  useEffect(() => {
+    if (isPlaying) startPolling(); else stopPolling();
+    return stopPolling;
+  }, [isPlaying, startPolling, stopPolling]);
 
   const playTrack = useCallback(async (track) => {
     setIsResolving(true);
     setCurrentTrack({ ...track, videoId: null }); // show player immediately with spinner
     setIsPlaying(true);
+    setCurrentTime(0);
+    setDuration(0);
 
     const videoId = await resolveVideoId(track).catch(() => null);
     setCurrentTrack({ ...track, videoId });
     setIsResolving(false);
+  }, []);
+
+  const seek = useCallback((seconds) => {
+    setCurrentTime(seconds);
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: "command", func: "seekTo", args: [seconds, true] }), "*"
+    );
   }, []);
 
   const togglePlay = useCallback(() => {
@@ -65,13 +123,17 @@ export function AudioProvider({ children }) {
     setCurrentTrack(null);
     setIsPlaying(false);
     setIsResolving(false);
-  }, []);
+    setCurrentTime(0);
+    setDuration(0);
+    stopPolling();
+  }, [stopPolling]);
 
   return (
     <AudioContext.Provider value={{
       currentTrack, isPlaying, isResolving,
+      currentTime, duration,
       queue, setQueue,
-      playTrack, togglePlay, nextTrack, prevTrack, clearTrack,
+      playTrack, togglePlay, nextTrack, prevTrack, clearTrack, seek,
       iframeRef,
     }}>
       {children}

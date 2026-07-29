@@ -30,11 +30,10 @@ export default function TrackPlayer() {
   const urlParams = new URLSearchParams(window.location.search);
   const trackId = urlParams.get("id");
 
-  const { queue, currentTrack, isResolving, playTrack, togglePlay: ctxTogglePlay, iframeRef } = useAudio();
+  const { queue, currentTrack, isResolving, playTrack, togglePlay: ctxTogglePlay, iframeRef, currentTime, duration, seek } = useAudio();
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [iframeVisible, setIframeVisible] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [liked, setLikedState] = useState(() => getLikedTracks()[trackId] || false);
   const [shuffleOn, setShuffleOn] = useState(false);
   const [repeatOn, setRepeatOn] = useState(false);
@@ -83,14 +82,12 @@ export default function TrackPlayer() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const totalSeconds = 225;
-  const currentSeconds = Math.floor((progress / 100) * totalSeconds);
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   const queueIndex = queue.findIndex(t => t.id === trackId);
 
   const skipTo = (nextTrack) => {
     if (!nextTrack) return;
-    setProgress(0);
     setIsPlaying(true);
     navigate(createPageUrl(`TrackPlayer?id=${nextTrack.id}`));
     playTrack(nextTrack);
@@ -246,14 +243,14 @@ export default function TrackPlayer() {
         <div className="mb-6">
           <Slider
             value={[progress]}
-            onValueChange={(v) => setProgress(v[0])}
+            onValueChange={(v) => duration > 0 && seek((v[0] / 100) * duration)}
             max={100}
-            step={1}
+            step={0.1}
             className="w-full"
           />
           <div className="flex justify-between mt-2 text-xs text-gray-400">
-            <span>{formatTime(currentSeconds)}</span>
-            <span>{track.duration || "3:45"}</span>
+            <span>{formatTime(currentTime)}</span>
+            <span>{duration > 0 ? formatTime(duration) : (track.duration || "–:––")}</span>
           </div>
         </div>
 
