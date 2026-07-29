@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatPrice } from "@/lib/currency";
 import { Link } from "react-router-dom";
+import SalesDashboard from "@/components/admin/SalesDashboard";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from "recharts";
 
 const CATEGORIES = ["Earbuds", "Accessories", "Apparel", "Limited Edition", "Bundles"];
@@ -201,14 +202,19 @@ export default function ShopAdmin() {
           </div>
         </div>
         <div className="flex gap-2">
-          {view !== "dashboard" && (
-            <button onClick={() => setView("dashboard")} className="px-3 py-2 rounded-xl bg-white/5 text-sm hover:bg-white/10 transition-colors">
-              Dashboard
+          {view !== "sales" && (
+            <button onClick={() => setView("sales")} className="px-3 py-2 rounded-xl bg-white/5 text-sm hover:bg-white/10 transition-colors">
+              Sales
             </button>
           )}
-          {view !== "list" && (
-            <button onClick={() => setView("list")} className="px-3 py-2 rounded-xl bg-white/5 text-sm hover:bg-white/10 transition-colors">
+          {view !== "dashboard" && (
+            <button onClick={() => setView("dashboard")} className="px-3 py-2 rounded-xl bg-white/5 text-sm hover:bg-white/10 transition-colors">
               Products
+            </button>
+          )}
+          {view !== "list" && view !== "sales" && view !== "dashboard" && (
+            <button onClick={() => setView("list")} className="px-3 py-2 rounded-xl bg-white/5 text-sm hover:bg-white/10 transition-colors">
+              List
             </button>
           )}
           <button onClick={openNew} className="px-3 py-2 rounded-xl bg-[#00D4FF] text-black text-sm font-bold flex items-center gap-1 hover:bg-[#00D4FF]/90 transition-colors">
@@ -218,6 +224,9 @@ export default function ShopAdmin() {
       </header>
 
       <div className="px-5 py-6 max-w-2xl mx-auto">
+
+        {/* SALES VIEW */}
+        {view === "sales" && <SalesDashboard products={products} />}
 
         {/* DASHBOARD VIEW */}
         {view === "dashboard" && (
