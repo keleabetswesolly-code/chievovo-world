@@ -75,7 +75,7 @@ export function AudioProvider({ children }) {
   }, [isPlaying, startPolling, stopPolling]);
 
   const playTrack = useCallback(async (track) => {
-    // Check cache first for instant offline/fast playback
+    // Check cache first for instant offline/fast playback — no API call needed
     const cached = getCachedTrack(track.id);
     if (cached?.videoId) {
       setCurrentTrack({ ...track, videoId: cached.videoId });
@@ -83,15 +83,7 @@ export function AudioProvider({ children }) {
       setCurrentTime(0);
       setDuration(0);
       setIsResolving(false);
-      // Still re-resolve in background if online to keep cache fresh
-      if (navigator.onLine) {
-        resolveVideoId(track).then(videoId => {
-          if (videoId) {
-            setCurrentTrack(prev => prev?.id === track.id ? { ...prev, videoId } : prev);
-            cacheTrack({ ...track, videoId });
-          }
-        }).catch(() => {});
-      }
+      // Do NOT re-resolve if cached — saves YouTube quota
       return;
     }
 
