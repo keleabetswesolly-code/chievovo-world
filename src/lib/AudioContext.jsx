@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { cacheTrack, getCachedTrack, useOfflineCache } from "@/hooks/useOfflineCache";
 
 const AudioContext = createContext(null);
 
@@ -17,6 +18,7 @@ async function resolveVideoId(track) {
 }
 
 export function AudioProvider({ children }) {
+  const { isOnline } = useOfflineCache();
   const [currentTrack, setCurrentTrack] = useState(null); // { id, title, artist_name, cover_url, videoId }
   const [isPlaying, setIsPlaying] = useState(false);
   const [isResolving, setIsResolving] = useState(false); // true while background YT search is in-flight
@@ -73,6 +75,26 @@ export function AudioProvider({ children }) {
   }, [isPlaying, startPolling, stopPolling]);
 
   const playTrack = useCallback(async (track) => {
+    // Check cache first for instant offline/fast playback
+    const cached = getCachedTrack(track.id);
+    if (cached?.videoId) {
+      setCurrentTrack({ ...track, videoId: cached.videoId });
+      setIsPlaying(true);
+      setCurrentTime(0);
+      setDuration(0);
+      setIsResolving(false);
+      // Still re-resolve in background if online to keep cache fresh
+      if (navigator.onLine) {
+        resolveVideoId(track).then(videoId => {
+          if (videoId) {
+            setCurrentTrack(prev => prev?.id === track.id ? { ...prev, videoId } : prev);
+            cacheTrack({ ...track, videoId });
+          }
+        }).catch(() => {});
+      }
+      return;
+    }
+
     setIsResolving(true);
     setCurrentTrack({ ...track, videoId: null }); // show player immediately with spinner
     setIsPlaying(true);
@@ -80,8 +102,11 @@ export function AudioProvider({ children }) {
     setDuration(0);
 
     const videoId = await resolveVideoId(track).catch(() => null);
-    setCurrentTrack({ ...track, videoId });
+    const resolved = { ...track, videoId };
+    setCurrentTrack(resolved);
     setIsResolving(false);
+    // Persist to offline cache
+    if (videoId) cacheTrack(resolved);
   }, []);
 
   const seek = useCallback((seconds) => {
@@ -132,6 +157,7 @@ export function AudioProvider({ children }) {
     <AudioContext.Provider value={{
       currentTrack, isPlaying, isResolving,
       currentTime, duration,
+      isOnline,
       queue, setQueue,
       playTrack, togglePlay, nextTrack, prevTrack, clearTrack, seek,
       iframeRef,

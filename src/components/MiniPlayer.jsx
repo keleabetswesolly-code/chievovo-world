@@ -1,12 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, X } from "lucide-react";
+import { Play, Pause, X, WifiOff } from "lucide-react";
 import { useAudio } from "@/lib/AudioContext";
 import { createPageUrl } from "@/utils";
 
 export default function MiniPlayer() {
-  const { currentTrack, isPlaying, isResolving, togglePlay, clearTrack, iframeRef, currentTime, duration } = useAudio();
+  const { currentTrack, isPlaying, isResolving, isOnline, togglePlay, clearTrack, iframeRef, currentTime, duration } = useAudio();
   const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
   const navigate = useNavigate();
   const videoId = currentTrack?.videoId;
@@ -71,7 +71,10 @@ export default function MiniPlayer() {
               onClick={() => navigate(createPageUrl(`TrackPlayer?id=${currentTrack.id}`))}
             >
               <p className="text-sm font-bold truncate text-white">{currentTrack.title}</p>
-              <p className="text-xs text-gray-400 truncate">{currentTrack.artist_name}</p>
+              <p className="text-xs truncate flex items-center gap-1">
+                {!isOnline && <WifiOff className="w-3 h-3 text-[#FF6B35] flex-shrink-0" />}
+                <span className={!isOnline ? "text-[#FF6B35]" : "text-gray-400"}>{currentTrack.artist_name}</span>
+              </p>
             </div>
 
             {/* Play/Pause */}

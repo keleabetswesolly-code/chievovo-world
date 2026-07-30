@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,7 +8,7 @@ import {
   ArrowLeft, MoreHorizontal, Heart, Share2,
   Play, Pause, SkipBack, SkipForward,
   Repeat, Shuffle, Volume2, ListMusic, Cast,
-  RefreshCw, WifiOff
+  WifiOff
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
@@ -30,9 +30,8 @@ export default function TrackPlayer() {
   const urlParams = new URLSearchParams(window.location.search);
   const trackId = urlParams.get("id");
 
-  const { queue, currentTrack, isResolving, playTrack, togglePlay: ctxTogglePlay, iframeRef, currentTime, duration, seek } = useAudio();
+  const { queue, currentTrack, isPlaying, isResolving, isOnline, playTrack, togglePlay, iframeRef, currentTime, duration, seek } = useAudio();
 
-  const [isPlaying, setIsPlaying] = useState(false);
   const [iframeVisible, setIframeVisible] = useState(false);
   const [liked, setLikedState] = useState(() => getLikedTracks()[trackId] || false);
   const [shuffleOn, setShuffleOn] = useState(false);
@@ -61,14 +60,8 @@ export default function TrackPlayer() {
   useEffect(() => {
     setIframeVisible(false);
     setEmbedError(false);
-    setIsPlaying(true);
     if (trackId) setLikedState(getLikedTracks()[trackId] || false);
   }, [trackId]);
-
-  const handleTogglePlay = () => {
-    setIsPlaying(p => !p);
-    ctxTogglePlay();
-  };
 
   const toggleLike = () => {
     const next = !liked;
@@ -88,7 +81,6 @@ export default function TrackPlayer() {
 
   const skipTo = (nextTrack) => {
     if (!nextTrack) return;
-    setIsPlaying(true);
     navigate(createPageUrl(`TrackPlayer?id=${nextTrack.id}`));
     playTrack(nextTrack);
   };
@@ -269,7 +261,7 @@ export default function TrackPlayer() {
             <SkipBack className="w-7 h-7 fill-current" />
           </button>
           <button
-            onClick={handleTogglePlay}
+            onClick={togglePlay}
             disabled={isResolving}
             className="w-16 h-16 bg-[#00D4FF] rounded-full flex items-center justify-center hover:bg-[#00D4FF]/90 transition-colors disabled:opacity-50"
             style={{ boxShadow: "0 0 30px rgba(0, 212, 255, 0.4)" }}
@@ -306,15 +298,17 @@ export default function TrackPlayer() {
           </button>
         </div>
 
-        {/* Device Indicator */}
+        {/* Device / Online Indicator */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="mt-4 flex items-center justify-center gap-2 text-xs text-[#00D4FF]"
+          className={`mt-4 flex items-center justify-center gap-2 text-xs ${isOnline ? "text-[#00D4FF]" : "text-[#FF6B35]"}`}
         >
-          <Volume2 className="w-4 h-4" />
-          <span>{isResolving ? "Finding stream…" : "Streaming via YouTube"}</span>
+          {isOnline ? <Volume2 className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />}
+          <span>
+            {isResolving ? "Finding stream…" : isOnline ? "Streaming via YouTube" : "Offline — playing cached stream"}
+          </span>
         </motion.div>
       </div>
     </div>
