@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
 const ShopAdmin = lazy(() => import('./pages/ShopAdmin'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-[#0A0A0A]">
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
           />
         ))}
         <Route path="/ShopAdmin" element={<ShopAdmin />} />
+        <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </Suspense>
