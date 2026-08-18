@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import usePullToRefresh from "@/hooks/usePullToRefresh";
 import { Search, SlidersHorizontal, Play, Shuffle, Youtube, Loader2, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -24,16 +24,19 @@ export default function Music() {
   const queryClient = useQueryClient();
   const [selectedGenre, setSelectedGenre] = useState(() => sessionStorage.getItem("music_genre") || "All");
   const [searchQuery, setSearchQuery] = useState(() => sessionStorage.getItem("music_search") || "");
-  const [visibleCount, setVisibleCount] = useState(10);
   const yt = useYouTubeSearch();
   const { playTrack, togglePlay, currentTrack, isPlaying, setQueue } = useAudio();
 
-  const { data: tracks = [], isLoading: tracksLoading } = useQuery({
+  const PAGE_SIZE = 10;
+  const { data: pagesData, isLoading: tracksLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['tracks', selectedGenre],
-    queryFn: () => selectedGenre === "All" 
-      ? base44.entities.Track.list('-plays', 200)
-      : base44.entities.Track.filter({ genre: selectedGenre }, '-plays', 200),
+    queryFn: ({ pageParam = 0 }) => selectedGenre === "All"
+      ? base44.entities.Track.list('-plays', PAGE_SIZE, pageParam)
+      : base44.entities.Track.filter({ genre: selectedGenre }, '-plays', PAGE_SIZE, pageParam),
+    getNextPageParam: (lastPage, allPages) => lastPage.length === PAGE_SIZE ? allPages.length * PAGE_SIZE : undefined,
+    initialPageParam: 0,
   });
+  const tracks = pagesData ? pagesData.pages.flat() : [];
 
   const { data: playlists = [] } = useQuery({
     queryKey: ['playlists'],
@@ -48,7 +51,7 @@ export default function Music() {
   const artistThumbnails = useArtistThumbnails(artists);
 
   const handleSetGenre = (g) => { setSelectedGenre(g); sessionStorage.setItem("music_genre", g); };
-  const handleSetSearch = (v) => { setSearchQuery(v); sessionStorage.setItem("music_search", v); setVisibleCount(10); };
+  const handleSetSearch = (v) => { setSearchQuery(v); sessionStorage.setItem("music_search", v); };
 
   const ptr = usePullToRefresh(() => {
     queryClient.invalidateQueries({ queryKey: ['tracks'] });
@@ -197,7 +200,7 @@ export default function Music() {
             </div>
           ) : (
             <div className="space-y-1">
-              {filteredTracks.slice(0, visibleCount).map((track, i) => (
+              {filteredTracks.map((track, i) => (
                 <TrackRow 
                   key={track.id} 
                   track={track} 
@@ -209,13 +212,17 @@ export default function Music() {
             </div>
           )}
 
-          {filteredTracks.length > visibleCount && !tracksLoading && (
+          {hasNextPage && !tracksLoading && (
             <button
-              onClick={() => setVisibleCount(c => c + 10)}
-              className="mt-4 w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-gray-300"
+              onClick={fetchNextPage}
+              disabled={isFetchingNextPage}
+              className="mt-4 w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-gray-300 disabled:opacity-50"
             >
-              Load More
-              <ChevronDown className="w-4 h-4" />
+              {isFetchingNextPage ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Loading…</>
+              ) : (
+                <>Load More <ChevronDown className="w-4 h-4" /></>
+              )}
             </button>
           )}
 
