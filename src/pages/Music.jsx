@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import usePullToRefresh from "@/hooks/usePullToRefresh";
-import { Search, SlidersHorizontal, Play, Shuffle, Youtube, Loader2 } from "lucide-react";
+import { Search, SlidersHorizontal, Play, Shuffle, Youtube, Loader2, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FeaturedCard from "@/components/ui/FeaturedCard";
 import TrackRow from "@/components/ui/TrackRow";
@@ -24,6 +24,7 @@ export default function Music() {
   const queryClient = useQueryClient();
   const [selectedGenre, setSelectedGenre] = useState(() => sessionStorage.getItem("music_genre") || "All");
   const [searchQuery, setSearchQuery] = useState(() => sessionStorage.getItem("music_search") || "");
+  const [visibleCount, setVisibleCount] = useState(10);
   const yt = useYouTubeSearch();
   const { playTrack, togglePlay, currentTrack, isPlaying, setQueue } = useAudio();
 
@@ -47,7 +48,7 @@ export default function Music() {
   const artistThumbnails = useArtistThumbnails(artists);
 
   const handleSetGenre = (g) => { setSelectedGenre(g); sessionStorage.setItem("music_genre", g); };
-  const handleSetSearch = (v) => { setSearchQuery(v); sessionStorage.setItem("music_search", v); };
+  const handleSetSearch = (v) => { setSearchQuery(v); sessionStorage.setItem("music_search", v); setVisibleCount(10); };
 
   const ptr = usePullToRefresh(() => {
     queryClient.invalidateQueries({ queryKey: ['tracks'] });
@@ -196,7 +197,7 @@ export default function Music() {
             </div>
           ) : (
             <div className="space-y-1">
-              {filteredTracks.map((track, i) => (
+              {filteredTracks.slice(0, visibleCount).map((track, i) => (
                 <TrackRow 
                   key={track.id} 
                   track={track} 
@@ -206,6 +207,16 @@ export default function Music() {
                 />
               ))}
             </div>
+          )}
+
+          {filteredTracks.length > visibleCount && !tracksLoading && (
+            <button
+              onClick={() => setVisibleCount(c => c + 10)}
+              className="mt-4 w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-gray-300"
+            >
+              Load More
+              <ChevronDown className="w-4 h-4" />
+            </button>
           )}
 
           {filteredTracks.length === 0 && !tracksLoading && !searchQuery && (
