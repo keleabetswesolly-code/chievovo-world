@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import usePullToRefresh from "@/hooks/usePullToRefresh";
-import { Search, SlidersHorizontal, Play, Shuffle, Youtube, Loader2, ChevronDown } from "lucide-react";
+import { Search, SlidersHorizontal, Play, Shuffle, Loader2, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FeaturedCard from "@/components/ui/FeaturedCard";
 import TrackRow from "@/components/ui/TrackRow";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import useYouTubeSearch from "@/hooks/useYouTubeSearch";
+import useHybridSearch from "@/hooks/useHybridSearch";
 import useArtistThumbnails from "@/hooks/useArtistThumbnails";
 import { useAudio } from "@/lib/AudioContext";
-import YouTubeResultRow from "@/components/ui/YouTubeResultRow";
+import SearchResultRow from "@/components/ui/SearchResultRow";
 
 const GENRES = ["All", "Afrobeats", "Amapiano", "Afro House", "Afro Tech", "Gqom", "Hip Hop"];
 
@@ -23,7 +23,6 @@ export default function Music() {
   const queryClient = useQueryClient();
   const [selectedGenre, setSelectedGenre] = useState(() => sessionStorage.getItem("music_genre") || "All");
   const [searchQuery, setSearchQuery] = useState(() => sessionStorage.getItem("music_search") || "");
-  const yt = useYouTubeSearch();
   const { playTrack, togglePlay, currentTrack, isPlaying, setQueue, expandPlayer } = useAudio();
 
   const PAGE_SIZE = 10;
@@ -36,6 +35,7 @@ export default function Music() {
     initialPageParam: 0,
   });
   const tracks = pagesData ? pagesData.pages.flat() : [];
+  const hybrid = useHybridSearch(tracks, searchQuery);
 
   const { data: playlists = [] } = useQuery({
     queryKey: ['playlists'],
@@ -58,17 +58,15 @@ export default function Music() {
     queryClient.invalidateQueries({ queryKey: ['artists-top'] });
   });
 
-  const filteredTracks = tracks.filter(track => 
-    !searchQuery || 
-    track.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    track.artist_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  useEffect(() => {
-    if (searchQuery && filteredTracks.length === 0 && !tracksLoading) {
-      yt.search(searchQuery);
+  const handlePlayResult = (res) => {
+    if (res.source === "youtube") {
+      playTrack({ id: res.id, title: res.title, artist_name: res.artist, cover_url: res.thumbnail, videoId: res.videoId, source: "youtube" });
+    } else {
+      playTrack(res.raw);
+      setQueue(tracks);
     }
-  }, [searchQuery, filteredTracks.length, tracksLoading]);
+    expandPlayer();
+  };
 
   return (
     <div className="min-h-screen bg-[#0A0A0A]" {...ptr}>
@@ -168,12 +166,47 @@ export default function Music() {
           </section>
         )}
 
-        {/* Tracks List */}
+        {/* Search Results — hybrid local + YouTube */}
+        {searchQuery && (
+          <section className="mb-8">
+            <SectionHeader
+              title="Search Results"
+              subtitle={`${hybrid.results.length} tracks${hybrid.loading ? " · searching…" : ""}`}
+            />
+            {hybrid.loading && hybrid.results.length === 0 && (
+              <div className="flex items-center justify-center py-8 gap-2">
+                <Loader2 className="w-5 h-5 text-[#22d3ee] animate-spin" />
+                <span className="text-sm text-gray-400">Searching local + YouTube…</span>
+              </div>
+            )}
+            {hybrid.results.length > 0 && (
+              <div className="space-y-2">
+                {hybrid.results.map((res, i) => (
+                  <SearchResultRow
+                    key={res.id}
+                    result={res}
+                    index={i}
+                    isPlaying={currentTrack?.id === res.id && isPlaying}
+                    onPlay={handlePlayResult}
+                  />
+                ))}
+              </div>
+            )}
+            {hybrid.results.length === 0 && !hybrid.loading && (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No results found</p>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Tracks List — shown when not searching */}
+        {!searchQuery && (
         <section>
           <div className="flex items-center justify-between mb-4">
-            <SectionHeader 
-              title={searchQuery ? "Search Results" : "All Tracks"} 
-              subtitle={`${filteredTracks.length} tracks`}
+            <SectionHeader
+              title="All Tracks"
+              subtitle={`${tracks.length} tracks`}
             />
             <div className="flex gap-2">
               <button className="w-10 h-10 rounded-full bg-[#FF6B35] flex items-center justify-center hover:bg-[#FF6B35]/90 transition-colors">
@@ -199,14 +232,14 @@ export default function Music() {
             </div>
           ) : (
             <div className="space-y-1">
-              {filteredTracks.map((track, i) => (
-                <TrackRow 
-                  key={track.id} 
-                  track={track} 
+              {tracks.map((track, i) => (
+                <TrackRow
+                  key={track.id}
+                  track={track}
                   index={i}
                   isPlaying={currentTrack?.id === track.id && isPlaying}
-                  onClick={() => { playTrack(track); setQueue(filteredTracks); expandPlayer(); }}
-                  onPlay={() => { playTrack(track); setQueue(filteredTracks); expandPlayer(); }}
+                  onClick={() => { playTrack(track); setQueue(tracks); expandPlayer(); }}
+                  onPlay={() => { playTrack(track); setQueue(tracks); expandPlayer(); }}
                 />
               ))}
             </div>
@@ -226,43 +259,13 @@ export default function Music() {
             </button>
           )}
 
-          {filteredTracks.length === 0 && !tracksLoading && !searchQuery && (
+          {tracks.length === 0 && !tracksLoading && (
             <div className="text-center py-12">
               <p className="text-gray-500">No tracks found</p>
             </div>
           )}
           </section>
-
-          {/* YouTube Search Fallback — auto-triggered when local results are empty */}
-          {searchQuery && (yt.loading || yt.results.length > 0) && (
-          <section className="mt-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Youtube className="w-4 h-4 text-red-500" />
-              <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400">Stream from YouTube</h3>
-            </div>
-            {yt.loading && (
-              <div className="flex items-center justify-center py-8 gap-2">
-                <Loader2 className="w-5 h-5 text-[#00D4FF] animate-spin" />
-                <span className="text-sm text-gray-400">Searching YouTube…</span>
-              </div>
-            )}
-            {yt.results.length > 0 && (
-              <div className="space-y-2">
-                {yt.results.map((item, i) => (
-                  <YouTubeResultRow
-                    key={item.videoId}
-                    item={item}
-                    index={i}
-                    onPlay={(videoId, title, thumbnail) => {
-                      playTrack({ id: `yt-${videoId}`, title, artist_name: item.channel || "YouTube", cover_url: thumbnail, videoId });
-                      expandPlayer();
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
-          )}
+        )}
       </div>
 
     </div>

@@ -192,7 +192,11 @@ export default function ExpandedPlayer() {
           <div className="flex items-center gap-2 text-xs text-[#22d3ee]">
             {isOnline ? <Volume2 className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />}
             <span className="font-medium tracking-wide">
-              {isResolving ? "Finding stream…" : isOnline ? "Streaming via YouTube" : "Offline — cached stream"}
+              {isResolving
+                ? "Finding stream…"
+                : currentTrack.source === "local"
+                  ? "Playing from Library"
+                  : isOnline ? "Streaming via YouTube" : "Offline — cached stream"}
             </span>
           </div>
           <button className="p-2 text-gray-400 hover:text-white transition-colors">

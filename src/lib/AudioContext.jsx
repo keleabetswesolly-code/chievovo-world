@@ -78,7 +78,7 @@ export function AudioProvider({ children }) {
   const playTrack = useCallback(async (track) => {
     // Known videoId (e.g. from YouTube search results) — instant, no resolve
     if (track.videoId) {
-      const resolved = { ...track, videoId: track.videoId };
+      const resolved = { ...track, videoId: track.videoId, source: track.source || "youtube" };
       setCurrentTrack(resolved);
       setIsPlaying(true);
       setCurrentTime(0);
@@ -90,7 +90,7 @@ export function AudioProvider({ children }) {
     // Check cache first for instant offline/fast playback — no API call needed
     const cached = getCachedTrack(track.id);
     if (cached?.videoId) {
-      setCurrentTrack({ ...track, videoId: cached.videoId });
+      setCurrentTrack({ ...track, videoId: cached.videoId, source: track.source || "local" });
       setIsPlaying(true);
       setCurrentTime(0);
       setDuration(0);
@@ -106,7 +106,7 @@ export function AudioProvider({ children }) {
     setDuration(0);
 
     const videoId = await resolveVideoId(track).catch(() => null);
-    const resolved = { ...track, videoId };
+    const resolved = { ...track, videoId, source: track.source || "local" };
     setCurrentTrack(resolved);
     setIsResolving(false);
     // Persist to offline cache
