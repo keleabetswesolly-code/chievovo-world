@@ -161,6 +161,57 @@ export function AudioProvider({ children }) {
     stopPolling();
   }, [stopPolling]);
 
+  // ── Native media controls (lock screen / notification center / Bluetooth) ───
+  const hasMediaSession = typeof navigator !== "undefined" && "mediaSession" in navigator;
+
+  // Metadata: title / artist / artwork shown on the lock screen
+  useEffect(() => {
+    if (!hasMediaSession) return;
+    if (!currentTrack) { navigator.mediaSession.metadata = null; return; }
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: currentTrack.title || "",
+      artist: currentTrack.artist_name || "",
+      album: currentTrack.album || "CHIEVOVO WORLD",
+      artwork: currentTrack.cover_url
+        ? [{ src: currentTrack.cover_url, sizes: "512x512", type: "image/jpeg" }]
+        : [],
+    });
+  }, [currentTrack, hasMediaSession]);
+
+  // Playback state sync → device shows playing / paused
+  useEffect(() => {
+    if (!hasMediaSession) return;
+    navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
+  }, [isPlaying, hasMediaSession]);
+
+  // Position state for the lock-screen scrubber
+  useEffect(() => {
+    if (!hasMediaSession || !currentTrack || duration <= 0) return;
+    try {
+      navigator.mediaSession.setPositionState({
+        duration,
+        position: Math.min(currentTime, duration),
+        playbackRate: 1,
+      });
+    } catch {}
+  }, [currentTime, duration, currentTrack, hasMediaSession]);
+
+  // Action handlers invoked from the lock screen, notification center & Bluetooth
+  useEffect(() => {
+    if (!hasMediaSession) return;
+    const ms = navigator.mediaSession;
+    const set = (action, fn) => { try { ms.setActionHandler(action, fn); } catch {} };
+    set("play", () => { if (!isPlaying) togglePlay(); });
+    set("pause", () => { if (isPlaying) togglePlay(); });
+    set("previoustrack", () => prevTrack());
+    set("nexttrack", () => nextTrack());
+    set("seekto", (d) => { if (d?.seekTime != null) seek(d.seekTime); });
+    return () => {
+      set("play", null); set("pause", null);
+      set("previoustrack", null); set("nexttrack", null); set("seekto", null);
+    };
+  }, [hasMediaSession, isPlaying, togglePlay, prevTrack, nextTrack, seek]);
+
   return (
     <AudioContext.Provider value={{
       currentTrack, isPlaying, isResolving,
