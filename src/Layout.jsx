@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AudioProvider } from "@/lib/AudioContext";
 import { CartProvider } from "@/lib/CartContext";
 import MiniPlayer from "@/components/MiniPlayer";
+import ExpandedPlayer from "@/components/ExpandedPlayer";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -82,6 +83,7 @@ export default function Layout({ children, currentPageName }) {
           </main>
 
           {!hideNav && <MiniPlayer />}
+          {currentPageName !== "TrackPlayer" && <ExpandedPlayer />}
 
           {!hideNav && (
             <nav className="fixed bottom-0 left-0 right-0 z-50 glass-card border-t border-white/5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>

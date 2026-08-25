@@ -22,6 +22,7 @@ export function AudioProvider({ children }) {
   const [currentTrack, setCurrentTrack] = useState(null); // { id, title, artist_name, cover_url, videoId }
   const [isPlaying, setIsPlaying] = useState(false);
   const [isResolving, setIsResolving] = useState(false); // true while background YT search is in-flight
+  const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
   const [queue, setQueue] = useState([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -75,6 +76,17 @@ export function AudioProvider({ children }) {
   }, [isPlaying, startPolling, stopPolling]);
 
   const playTrack = useCallback(async (track) => {
+    // Known videoId (e.g. from YouTube search results) — instant, no resolve
+    if (track.videoId) {
+      const resolved = { ...track, videoId: track.videoId };
+      setCurrentTrack(resolved);
+      setIsPlaying(true);
+      setCurrentTime(0);
+      setDuration(0);
+      setIsResolving(false);
+      cacheTrack(resolved);
+      return;
+    }
     // Check cache first for instant offline/fast playback — no API call needed
     const cached = getCachedTrack(track.id);
     if (cached?.videoId) {
@@ -136,10 +148,14 @@ export function AudioProvider({ children }) {
     if (prev) playTrack(prev);
   }, [queue, currentTrack, playTrack]);
 
+  const expandPlayer = useCallback(() => setIsPlayerExpanded(true), []);
+  const collapsePlayer = useCallback(() => setIsPlayerExpanded(false), []);
+
   const clearTrack = useCallback(() => {
     setCurrentTrack(null);
     setIsPlaying(false);
     setIsResolving(false);
+    setIsPlayerExpanded(false);
     setCurrentTime(0);
     setDuration(0);
     stopPolling();
@@ -150,6 +166,7 @@ export function AudioProvider({ children }) {
       currentTrack, isPlaying, isResolving,
       currentTime, duration,
       isOnline,
+      isPlayerExpanded, expandPlayer, collapsePlayer,
       queue, setQueue,
       playTrack, togglePlay, nextTrack, prevTrack, clearTrack, seek,
       iframeRef,

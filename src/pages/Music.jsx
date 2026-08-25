@@ -14,7 +14,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useYouTubeSearch from "@/hooks/useYouTubeSearch";
 import useArtistThumbnails from "@/hooks/useArtistThumbnails";
 import { useAudio } from "@/lib/AudioContext";
-import YouTubePlayer from "@/components/ui/YouTubePlayer";
 import YouTubeResultRow from "@/components/ui/YouTubeResultRow";
 
 const GENRES = ["All", "Afrobeats", "Amapiano", "Afro House", "Afro Tech", "Gqom", "Hip Hop"];
@@ -25,7 +24,7 @@ export default function Music() {
   const [selectedGenre, setSelectedGenre] = useState(() => sessionStorage.getItem("music_genre") || "All");
   const [searchQuery, setSearchQuery] = useState(() => sessionStorage.getItem("music_search") || "");
   const yt = useYouTubeSearch();
-  const { playTrack, togglePlay, currentTrack, isPlaying, setQueue } = useAudio();
+  const { playTrack, togglePlay, currentTrack, isPlaying, setQueue, expandPlayer } = useAudio();
 
   const PAGE_SIZE = 10;
   const { data: pagesData, isLoading: tracksLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
@@ -206,7 +205,8 @@ export default function Music() {
                   track={track} 
                   index={i}
                   isPlaying={currentTrack?.id === track.id && isPlaying}
-                  onClick={() => { playTrack(track); setQueue(filteredTracks); }}
+                  onClick={() => { playTrack(track); setQueue(filteredTracks); expandPlayer(); }}
+                  onPlay={() => { playTrack(track); setQueue(filteredTracks); expandPlayer(); }}
                 />
               ))}
             </div>
@@ -249,7 +249,15 @@ export default function Music() {
             {yt.results.length > 0 && (
               <div className="space-y-2">
                 {yt.results.map((item, i) => (
-                  <YouTubeResultRow key={item.videoId} item={item} index={i} onPlay={yt.play} />
+                  <YouTubeResultRow
+                    key={item.videoId}
+                    item={item}
+                    index={i}
+                    onPlay={(videoId, title, thumbnail) => {
+                      playTrack({ id: `yt-${videoId}`, title, artist_name: item.channel || "YouTube", cover_url: thumbnail, videoId });
+                      expandPlayer();
+                    }}
+                  />
                 ))}
               </div>
             )}
@@ -257,7 +265,6 @@ export default function Music() {
           )}
       </div>
 
-      <YouTubePlayer activeVideo={yt.activeVideo} onClose={yt.close} />
     </div>
   );
 }
