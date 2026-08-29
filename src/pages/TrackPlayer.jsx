@@ -184,8 +184,8 @@ export default function TrackPlayer() {
               >
                 <iframe
                   ref={iframeRef}
-                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`}
-                  allow="autoplay; encrypted-media"
+                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&rel=0&playsinline=1&enablejsapi=1`}
+                  allow="autoplay; encrypted-media; picture-in-picture; web-share"
                   title="track-player"
                   className="w-full h-full border-0"
                   onLoad={() => setIframeVisible(true)}
