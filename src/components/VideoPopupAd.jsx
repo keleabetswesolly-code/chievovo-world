@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,12 +11,23 @@ const DISMISS_KEY = "chievovo_video_ad_dismissed";
 export default function VideoPopupAd() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     if (sessionStorage.getItem(DISMISS_KEY)) return;
     const t = setTimeout(() => setOpen(true), 1500);
     return () => clearTimeout(t);
   }, []);
+
+  // Force muted + play via ref (React's `muted` prop isn't reliably applied to the DOM,
+  // which blocks autoplay and leaves the video black).
+  useEffect(() => {
+    if (!open) return;
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.play().catch(() => {});
+  }, [open]);
 
   const close = () => {
     setOpen(false);
@@ -61,6 +72,7 @@ export default function VideoPopupAd() {
 
             <div className="relative w-full aspect-[9/16] bg-black">
               <video
+                ref={videoRef}
                 src={AD_VIDEO_URL}
                 className="w-full h-full object-cover"
                 autoPlay
