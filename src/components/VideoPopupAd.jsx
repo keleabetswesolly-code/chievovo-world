@@ -49,6 +49,12 @@ export default function VideoPopupAd() {
           className="fixed inset-0 z-[70] flex items-center justify-center p-5 bg-black/80 backdrop-blur-md"
           onClick={close}
         >
+          <button
+            onClick={close}
+            className="absolute top-4 left-4 z-10 w-9 h-9 rounded-full bg-white/10 backdrop-blur flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
           <motion.div
             initial={{ scale: 0.92, y: 24, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -58,16 +64,8 @@ export default function VideoPopupAd() {
             className="w-full max-w-sm rounded-3xl overflow-hidden"
             style={{ background: "#0b0f12", border: "1px solid rgba(255,255,255,0.08)" }}
           >
-            <div className="flex items-center justify-between px-4 py-3">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#00D4FF]">Sponsored</span>
-              </div>
-              <button
-                onClick={close}
-                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300 hover:bg-white/20 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+            <div className="px-4 py-3">
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#00D4FF]">Sponsored</span>
             </div>
 
             <div className="relative w-full aspect-[9/16] bg-black">

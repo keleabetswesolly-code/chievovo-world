@@ -13,7 +13,7 @@ export default function HeroBanner({ onClick }) {
       whileTap={{ scale: 0.98 }}
     >
       <img
-        src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800"
+        src="https://media.base44.com/images/public/69a791e052caf5d23b3b4005/5b0e46bfe_Screenshot_20260830-155729.jpg"
         alt="Buddyz Pro"
         className="absolute inset-0 w-full h-full object-cover"
       />
