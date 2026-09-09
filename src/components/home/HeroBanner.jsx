@@ -17,7 +17,7 @@ export default function HeroBanner({ onClick }) {
         alt="Buddyz Pro"
         className="absolute inset-0 w-full h-full object-cover"
       />
-      <div className="absolute inset-0" style={{ background: "linear-gradient(110deg, #000000f0 40%, #00D4FF18 100%)" }} />
+      <div className="absolute inset-0" style={{ background: "linear-gradient(110deg, #00000099 25%, #00000033 60%, #00D4FF10 100%)" }} />
       
       {/* Animated glow */}
       <div className="absolute right-8 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full opacity-30 blur-3xl" style={{ background: "#00D4FF" }} />
