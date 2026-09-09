@@ -14,6 +14,7 @@ import FeedCard from "@/components/home/FeedCard";
 import YouTubeSearch from "@/components/home/YouTubeSearch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useArtistThumbnails from "@/hooks/useArtistThumbnails";
+import VideoPopupAd from "@/components/VideoPopupAd";
 
 const PILLS = [
   { label: "Discover", icon: Search, page: "Discover", color: "#00D4FF" },
@@ -263,6 +264,8 @@ export default function Home() {
         </section>
 
       </div>
+
+      <VideoPopupAd />
     </div>
   );
 }
