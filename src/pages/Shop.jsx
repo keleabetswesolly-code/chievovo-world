@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, ShoppingCart, Package, Headphones, Sparkles, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import ProductCard from "@/components/ui/ProductCard";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CartDrawer from "@/components/CartDrawer";
@@ -28,11 +27,6 @@ export default function Shop() {
     queryFn: () => selectedCategory === "All"
       ? base44.entities.Product.list('-created_date', 20)
       : base44.entities.Product.filter({ category: selectedCategory }, '-created_date', 20),
-  });
-
-  const { data: featuredProducts = [] } = useQuery({
-    queryKey: ['featured-products'],
-    queryFn: () => base44.entities.Product.filter({ featured: true }, '-created_date', 3),
   });
 
   const filteredProducts = products.filter(product =>
@@ -100,48 +94,6 @@ export default function Shop() {
             ))}
           </div>
         </div>
-
-        {/* Featured Banner */}
-        {!searchQuery && featuredProducts.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            onClick={() => navigate(createPageUrl(`ProductDetail?id=${featuredProducts[0].id}`))}
-            className="relative rounded-3xl overflow-hidden mb-8 cursor-pointer group"
-          >
-            <div className="aspect-[16/9] relative">
-              <img
-                src={featuredProducts[0].images?.[0] || "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800"}
-                alt={featuredProducts[0].name}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-            </div>
-
-            <div className="absolute top-4 left-4 flex gap-2">
-              <Badge className="bg-[#FF6B35] text-white border-0 font-bold">
-                <Sparkles className="w-3 h-3 mr-1" />
-                New Drop
-              </Badge>
-            </div>
-
-            <div className="absolute bottom-0 left-0 right-0 p-6">
-              <span className="text-xs text-[#00D4FF] font-bold uppercase tracking-wider">
-                {featuredProducts[0].category}
-              </span>
-              <h2 className="text-2xl font-black mt-1 mb-2">{featuredProducts[0].name}</h2>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl font-bold">{formatPrice(featuredProducts[0].price)}</span>
-                {featuredProducts[0].original_price && (
-                  <span className="text-gray-400 line-through">{formatPrice(featuredProducts[0].original_price)}</span>
-                )}
-                <button className="ml-auto px-6 py-2.5 bg-[#00D4FF] text-black font-bold rounded-full hover:bg-[#00D4FF]/90 transition-colors">
-                  Shop Now
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-3 mb-8">
