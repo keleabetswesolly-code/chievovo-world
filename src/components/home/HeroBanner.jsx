@@ -36,7 +36,6 @@ export default function HeroBanner({ onClick }) {
             <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm text-black" style={{ background: "#00D4FF" }}>
               <ShoppingBag className="w-4 h-4" /> Shop Now
             </span>
-            <span className="text-xs text-gray-500 line-through">R1999.99</span>
             <span className="text-sm font-bold text-white">R1499.99</span>
           </div>
         </div>

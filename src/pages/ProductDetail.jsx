@@ -157,9 +157,6 @@ export default function ProductDetail() {
         <h1 className="text-2xl font-black mb-2">{product.name}</h1>
         <div className="flex items-center gap-3 mb-6">
           <span className="text-3xl font-black">{formatPrice(product.price)}</span>
-          {product.original_price && (
-            <span className="text-lg text-gray-500 line-through">{formatPrice(product.original_price)}</span>
-          )}
         </div>
 
         {/* Color Selection */}

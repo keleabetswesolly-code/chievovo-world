@@ -58,9 +58,6 @@ export default function ProductCard({ product, onClick, onAddToCart }) {
         <h3 className="font-semibold mt-1 line-clamp-1">{product.name}</h3>
         <div className="flex items-center gap-2 mt-1">
           <span className="font-bold text-lg">{formatPrice(product.price)}</span>
-          {product.original_price && (
-            <span className="text-sm text-gray-500 line-through">{formatPrice(product.original_price)}</span>
-          )}
         </div>
       </div>
     </motion.div>
