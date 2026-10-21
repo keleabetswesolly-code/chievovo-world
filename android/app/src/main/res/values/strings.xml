@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CHIEVOVO WORLD</string>
+    <string name="title_activity_main">CHIEVOVO WORLD</string>
+    <string name="package_name">com.chievovo.world</string>
+    <string name="custom_url_scheme">com.chievovo.world</string>
+</resources>
