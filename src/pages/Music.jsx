@@ -194,7 +194,11 @@ export default function Music() {
             )}
             {hybrid.results.length === 0 && !hybrid.loading && (
               <div className="text-center py-12">
-                <p className="text-gray-500">No results found</p>
+                <p className="text-gray-500">
+                  {hybrid.error
+                    ? "YouTube search is unavailable right now — try again in a moment"
+                    : "No results found"}
+                </p>
               </div>
             )}
           </section>

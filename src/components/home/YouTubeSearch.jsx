@@ -97,7 +97,11 @@ export default function YouTubeSearch() {
       )}
 
       {!hybrid.loading && hasSearched && hybrid.results.length === 0 && (
-        <p className="text-center text-sm text-gray-600 py-6">No results — try a different search</p>
+        <p className="text-center text-sm text-gray-600 py-6">
+          {hybrid.error
+            ? "YouTube search is unavailable right now — try again in a moment"
+            : "No results — try a different search"}
+        </p>
       )}
 
       {!hasSearched && (

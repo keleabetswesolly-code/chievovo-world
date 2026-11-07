@@ -37,12 +37,11 @@ export default function Discover() {
 
   const hasResults = q && (filteredTracks.length + filteredArtists.length + filteredRooms.length + filteredCollabs.length) > 0;
 
+  // Debounced so we don't fire (and burn quota for) a YouTube request per keystroke
   useEffect(() => {
-    if (q) {
-      yt.search(query);
-    } else {
-      yt.close();
-    }
+    if (!query.trim()) { yt.close(); return; }
+    const t = setTimeout(() => yt.search(query), 350);
+    return () => clearTimeout(t);
   }, [query]);
 
   return (
@@ -202,11 +201,17 @@ export default function Discover() {
                 </section>
               )}
 
-              {!hasResults && !yt.results.length && q && (
+              {!hasResults && !yt.loading && !yt.results.length && q && (
                 <div className="text-center py-16">
                   <Search className="w-12 h-12 text-gray-700 mx-auto mb-4" />
-                  <h3 className="text-lg font-bold mb-2">No results for "{query}"</h3>
-                  <p className="text-gray-500">Try a different search term</p>
+                  <h3 className="text-lg font-bold mb-2">
+                    {yt.error ? "Search unavailable" : `No results for "${query}"`}
+                  </h3>
+                  <p className="text-gray-500">
+                    {yt.error
+                      ? "YouTube search is unavailable right now — try again in a moment"
+                      : "Try a different search term"}
+                  </p>
                 </div>
               )}
             </motion.div>

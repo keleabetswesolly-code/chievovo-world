@@ -6,21 +6,26 @@ import { base44 } from "@/api/base44Client";
 export default function useHybridSearch(localTracks = [], query = "") {
   const [ytResults, setYtResults] = useState([]);
   const [ytLoading, setYtLoading] = useState(false);
+  const [ytError, setYtError] = useState(null);
 
   const q = query.trim();
 
   // Query YouTube in parallel (debounced) — runs alongside client-side local filter
   useEffect(() => {
-    if (!q) { setYtResults([]); setYtLoading(false); return; }
+    if (!q) { setYtResults([]); setYtLoading(false); setYtError(null); return; }
     let cancelled = false;
     setYtLoading(true);
+    setYtError(null);
     const t = setTimeout(async () => {
       try {
         const res = await base44.functions.invoke("youtubeSearch", { query: q });
         const data = res?.data?.results ?? res?.results ?? [];
         if (!cancelled) setYtResults(Array.isArray(data) ? data : []);
       } catch {
-        if (!cancelled) setYtResults([]);
+        if (!cancelled) {
+          setYtResults([]);
+          setYtError("YouTube search is unavailable right now");
+        }
       } finally {
         if (!cancelled) setYtLoading(false);
       }
@@ -68,5 +73,5 @@ export default function useHybridSearch(localTracks = [], query = "") {
     });
   }, [localResults, youtubeResults]);
 
-  return { results, loading: ytLoading, localCount: localResults.length, ytCount: youtubeResults.length };
+  return { results, loading: ytLoading, error: ytError, localCount: localResults.length, ytCount: youtubeResults.length };
 }
