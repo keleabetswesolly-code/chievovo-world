@@ -11,39 +11,76 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'query is required' }, { status: 400 });
     }
 
-    const cacheKey = `search:${query.trim().toLowerCase()}`;
+    const clean = query.trim();
+    // v2 cache key: older entries may point at non-embeddable videos, start fresh
+    const cacheKey = `search:v2:${clean.toLowerCase()}`;
     const now = new Date();
 
     // --- Cache-first: check DB before hitting YouTube API ---
+    let staleRecord: any = null;
     try {
       const cached = await base44.asServiceRole.entities.YouTubeCache.filter({ video_id: cacheKey });
       const record = cached?.[0];
-      if (record && record.expires_at && new Date(record.expires_at) > now) {
-        const results = JSON.parse(record.raw_data || '[]');
-        return Response.json({ results, cached: true });
+      if (record) {
+        staleRecord = record;
+        if (record.expires_at && new Date(record.expires_at) > now) {
+          const results = JSON.parse(record.raw_data || '[]');
+          return Response.json({ results, cached: true });
+        }
       }
     } catch (_) { /* cache miss, proceed to API */ }
 
+    // Keep music playing when YouTube is exhausted/unreachable: serve last good results
+    const staleFallback = () => {
+      if (!staleRecord?.raw_data) return null;
+      try {
+        const results = JSON.parse(staleRecord.raw_data);
+        if (Array.isArray(results) && results.length) {
+          return Response.json({ results, cached: true, stale: true });
+        }
+      } catch (_) {}
+      return null;
+    };
+
     const apiKey = Deno.env.get('YOUTUBE_API_KEY');
-    if (!apiKey) return Response.json({ error: 'YouTube API key not configured' }, { status: 500 });
-
-    // Append "official audio" to prioritize clean results
-    const searchQuery = `${query} official audio`;
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=5&q=${encodeURIComponent(searchQuery)}&key=${apiKey}`;
-
-    const ytRes = await fetch(url);
-    const ytData = await ytRes.json();
-
-    if (!ytRes.ok) {
-      return Response.json({ error: ytData?.error?.message || 'YouTube API error' }, { status: ytRes.status });
+    if (!apiKey) {
+      return staleFallback() || Response.json({ error: 'YouTube API key not configured' }, { status: 500 });
     }
 
-    const results = (ytData.items || []).map((item: any) => ({
-      videoId: item.id?.videoId,
-      title: item.snippet?.title,
-      thumbnail: item.snippet?.thumbnails?.high?.url || item.snippet?.thumbnails?.default?.url,
-      channel: item.snippet?.channelTitle,
-    })).filter((r: any) => r.videoId);
+    // Only embeddable + syndicated videos can actually play inside the app.
+    // Label/VEVO videos are blocked outside youtube.com, which breaks playback.
+    const searchYouTube = async (q: string, strict: boolean) => {
+      const embedFilter = strict ? '&videoEmbeddable=true&videoSyndicated=true' : '';
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=8${embedFilter}&q=${encodeURIComponent(q)}&key=${apiKey}`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+      const data = await res.json();
+      if (!res.ok) {
+        return { ok: false, status: res.status, error: data?.error?.message || 'YouTube API error', items: [] as any[] };
+      }
+      const items = (data.items || []).map((item: any) => ({
+        videoId: item.id?.videoId,
+        title: item.snippet?.title,
+        thumbnail: item.snippet?.thumbnails?.high?.url || item.snippet?.thumbnails?.default?.url,
+        channel: item.snippet?.channelTitle,
+      })).filter((r: any) => r.videoId);
+      return { ok: true, status: 200, error: '', items };
+    };
+
+    // Don't duplicate the suffix the caller may already include
+    const composed = /official/i.test(clean) ? clean : `${clean} official audio`;
+    let attempt = await searchYouTube(composed, true);
+    if (attempt.ok && attempt.items.length === 0) {
+      attempt = await searchYouTube(clean, true);
+    }
+    if (attempt.ok && attempt.items.length === 0) {
+      attempt = await searchYouTube(clean, false);
+    }
+
+    if (!attempt.ok) {
+      return staleFallback() || Response.json({ error: attempt.error }, { status: attempt.status });
+    }
+
+    const results = attempt.items;
 
     // --- Persist results to cache for TTL days ---
     const expiresAt = new Date(now.getTime() + SEARCH_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString();

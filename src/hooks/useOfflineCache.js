@@ -8,7 +8,8 @@
  * and shows a clear offline banner when the stream cannot load.
  */
 
-const CACHE_KEY = "chievovo_track_cache";
+// v2: bump so previously cached non-embeddable videoIds are discarded
+const CACHE_KEY = "chievovo_track_cache_v2";
 const MAX_CACHED = 50; // keep last 50 played tracks
 
 function readCache() {
