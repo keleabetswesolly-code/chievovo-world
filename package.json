@@ -16,8 +16,8 @@
     "android:release": "npm run build && npx cap sync android && cd android && ./gradlew assembleRelease bundleRelease -PversionCode=$(date +%s | cut -c6-10) -PversionName=local"
   },
   "dependencies": {
-    "@base44/sdk": "^0.8.54",
-    "@base44/vite-plugin": "^1.0.47",
+    "@base44/sdk": "^0.8.59",
+    "@base44/vite-plugin": "^1.0.52",
     "@capacitor/android": "^6.2.2",
     "@capacitor/cli": "^6.2.2",
     "@capacitor/core": "^6.2.2",
