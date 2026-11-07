@@ -212,6 +212,28 @@ export function AudioProvider({ children }) {
     };
   }, [hasMediaSession, isPlaying, togglePlay, prevTrack, nextTrack, seek]);
 
+  // ── Background playback ──────────────────────────────────────────────
+  // While the app is hidden the embedded player can be paused by the OS.
+  // Don't interfere when going away, and nudge it back to playing as soon
+  // as the user returns, so the track carries on instead of dying.
+  useEffect(() => {
+    const resume = () => {
+      if (!isPlaying || !iframeRef.current) return;
+      iframeRef.current.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: "playVideo", args: [] }), "*"
+      );
+    };
+    const onVisible = () => { if (!document.hidden) resume(); };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    window.addEventListener("pageshow", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+      window.removeEventListener("pageshow", onVisible);
+    };
+  }, [isPlaying]);
+
   return (
     <AudioContext.Provider value={{
       currentTrack, isPlaying, isResolving,
