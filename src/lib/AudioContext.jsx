@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { cacheTrack, getCachedTrack, useOfflineCache } from "@/hooks/useOfflineCache";
+import { startNativePlayback, setNativePlaybackState, stopNativePlayback } from "@/lib/nativeMedia";
 
 const AudioContext = createContext(null);
 
@@ -152,6 +153,7 @@ export function AudioProvider({ children }) {
   const collapsePlayer = useCallback(() => setIsPlayerExpanded(false), []);
 
   const clearTrack = useCallback(() => {
+    stopNativePlayback();
     setCurrentTrack(null);
     setIsPlaying(false);
     setIsResolving(false);
@@ -212,10 +214,30 @@ export function AudioProvider({ children }) {
     };
   }, [hasMediaSession, isPlaying, togglePlay, prevTrack, nextTrack, seek]);
 
+  // ── Android app: keep playing while backgrounded ──────────────────────
+  // The native foreground service holds the app process alive and mirrors
+  // playback into the notification shade. No-op in a browser.
+  useEffect(() => {
+    if (currentTrack) startNativePlayback(currentTrack);
+  }, [currentTrack?.id, currentTrack?.videoId]);
+
+  useEffect(() => {
+    if (currentTrack) setNativePlaybackState(isPlaying);
+  }, [isPlaying, currentTrack?.id]);
+
+  // Play / pause / next tapped in the Android notification
+  useEffect(() => {
+    window.chievovoMediaAction = (action) => {
+      if (action === "next") nextTrack();
+      else togglePlay();
+    };
+    return () => { delete window.chievovoMediaAction; };
+  }, [nextTrack, togglePlay]);
+
   // ── Background playback ──────────────────────────────────────────────
-  // Chrome (and the embedded player) pause media the moment the tab is
-  // hidden. Keep nudging playback back on while a track is meant to be
-  // playing, and resume again the instant the user returns.
+  // The embedded player can pause as soon as the app is hidden. While a
+  // track is meant to be playing, keep nudging it back and resume again
+  // the instant the user returns.
   const playingRef = useRef(false);
   useEffect(() => {
     playingRef.current = isPlaying;
@@ -226,11 +248,17 @@ export function AudioProvider({ children }) {
       );
     };
     let timers = [];
-    const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+    let ticker = null;
+    const clearAll = () => {
+      timers.forEach(clearTimeout);
+      timers = [];
+      if (ticker) { clearInterval(ticker); ticker = null; }
+    };
     const onVisibility = () => {
-      clearTimers();
+      clearAll();
       if (document.hidden) {
-        [0, 500, 1500, 4000].forEach(ms => timers.push(setTimeout(play, ms)));
+        [0, 500, 1500].forEach(ms => timers.push(setTimeout(play, ms)));
+        ticker = setInterval(play, 5000);
       } else {
         play();
       }
@@ -239,7 +267,7 @@ export function AudioProvider({ children }) {
     window.addEventListener("focus", play);
     window.addEventListener("pageshow", play);
     return () => {
-      clearTimers();
+      clearAll();
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("focus", play);
       window.removeEventListener("pageshow", play);
