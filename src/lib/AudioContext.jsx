@@ -213,24 +213,36 @@ export function AudioProvider({ children }) {
   }, [hasMediaSession, isPlaying, togglePlay, prevTrack, nextTrack, seek]);
 
   // ── Background playback ──────────────────────────────────────────────
-  // While the app is hidden the embedded player can be paused by the OS.
-  // Don't interfere when going away, and nudge it back to playing as soon
-  // as the user returns, so the track carries on instead of dying.
+  // Chrome (and the embedded player) pause media the moment the tab is
+  // hidden. Keep nudging playback back on while a track is meant to be
+  // playing, and resume again the instant the user returns.
+  const playingRef = useRef(false);
   useEffect(() => {
-    const resume = () => {
-      if (!isPlaying || !iframeRef.current) return;
+    playingRef.current = isPlaying;
+    const play = () => {
+      if (!playingRef.current || !iframeRef.current) return;
       iframeRef.current.contentWindow?.postMessage(
         JSON.stringify({ event: "command", func: "playVideo", args: [] }), "*"
       );
     };
-    const onVisible = () => { if (!document.hidden) resume(); };
-    document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("focus", onVisible);
-    window.addEventListener("pageshow", onVisible);
+    let timers = [];
+    const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+    const onVisibility = () => {
+      clearTimers();
+      if (document.hidden) {
+        [0, 500, 1500, 4000].forEach(ms => timers.push(setTimeout(play, ms)));
+      } else {
+        play();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", play);
+    window.addEventListener("pageshow", play);
     return () => {
-      document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("focus", onVisible);
-      window.removeEventListener("pageshow", onVisible);
+      clearTimers();
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", play);
+      window.removeEventListener("pageshow", play);
     };
   }, [isPlaying]);
 
